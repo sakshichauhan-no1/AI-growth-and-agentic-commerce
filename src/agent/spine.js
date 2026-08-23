@@ -71,7 +71,7 @@ function gate(explainedAction, policy = {}) {
   };
 }
 
-function readAuditLog(auditLogPath) {
+function readAuditLog(auditLogPath = DEFAULT_AUDIT_LOG_PATH) {
   if (!existsSync(auditLogPath)) return [];
   const content = readFileSync(auditLogPath, 'utf8').trim();
   return content ? JSON.parse(content) : [];
@@ -130,4 +130,4 @@ async function runSpine(orderRequest, { catalog, client, policy, auditLogPath } 
   return execute(gated, { client, auditLogPath });
 }
 
-module.exports = { proposeAction, explain, gate, execute, audit, runSpine, DEFAULT_AUDIT_LOG_PATH };
+module.exports = { proposeAction, explain, gate, execute, audit, readAuditLog, runSpine, DEFAULT_AUDIT_LOG_PATH };

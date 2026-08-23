@@ -266,5 +266,85 @@
     },
     "status": "failed",
     "error": "Action rejected by gate: Rejected: transaction exceeds the ₹10,000 agent spending ceiling."
+  },
+  {
+    "actionId": "action_1787512334023_d8efd1",
+    "actionType": "CREATE_ORDER",
+    "executedAt": "2026-08-23T19:12:14.024Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-23T19:12:14.023Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 129900,
+      "amount_paid": 0,
+      "amount_due": 129900,
+      "currency": "INR",
+      "receipt": "action_1787512334023_d8efd1",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787512334023_d8efd1",
+        "productId": "sku_wireless_mouse_001"
+      },
+      "created_at": 1787512334
+    }
+  },
+  {
+    "actionId": "action_1787512334040_6968c6",
+    "actionType": "CREATE_ORDER",
+    "executedAt": "2026-08-23T19:12:14.040Z",
+    "gate": {
+      "approved": false,
+      "reasons": [
+        "Rejected: transaction exceeds the ₹10,000 agent spending ceiling."
+      ],
+      "decidedAt": "2026-08-23T19:12:14.040Z"
+    },
+    "status": "failed",
+    "error": "Action rejected by gate: Rejected: transaction exceeds the ₹10,000 agent spending ceiling."
+  },
+  {
+    "actionId": "action_1787512375040_a3564b",
+    "actionType": "CREATE_ORDER",
+    "executedAt": "2026-08-23T19:12:55.040Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-23T19:12:55.040Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 129900,
+      "amount_paid": 0,
+      "amount_due": 129900,
+      "currency": "INR",
+      "receipt": "action_1787512375040_a3564b",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787512375040_a3564b",
+        "productId": "sku_wireless_mouse_001"
+      },
+      "created_at": 1787512375
+    }
+  },
+  {
+    "actionId": "action_1787512375048_a63e86",
+    "actionType": "CREATE_ORDER",
+    "executedAt": "2026-08-23T19:12:55.048Z",
+    "gate": {
+      "approved": false,
+      "reasons": [
+        "Rejected: transaction exceeds the ₹10,000 agent spending ceiling."
+      ],
+      "decidedAt": "2026-08-23T19:12:55.048Z"
+    },
+    "status": "failed",
+    "error": "Action rejected by gate: Rejected: transaction exceeds the ₹10,000 agent spending ceiling."
   }
 ]

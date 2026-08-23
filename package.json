@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "check": "node --check src/api/razorpayClient.js && node --check src/mock/razorpayMock.js && node --check src/agent/spine.js && node --check src/agent/index.js && node --check src/index.js",
+    "start": "node src/server.js",
+    "check": "node --check src/api/razorpayClient.js && node --check src/mock/razorpayMock.js && node --check src/agent/spine.js && node --check src/agent/index.js && node --check src/index.js && node --check src/server.js && node --check public/app.js",
     "test": "npm run check"
   },
   "repository": {
@@ -22,6 +22,7 @@
   "homepage": "https://github.com/sakshichauhan-no1/AI-growth-and-agentic-commerce#readme",
   "dependencies": {
     "dotenv": "^17.4.2",
+    "express": "^5.2.1",
     "pino": "^10.3.1",
     "razorpay": "^2.9.8",
     "zod": "^4.4.3"
