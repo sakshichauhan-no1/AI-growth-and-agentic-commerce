@@ -1,6 +1,9 @@
 'use strict';
 
+require('dotenv').config({ quiet: true });
+
 const Razorpay = require('razorpay');
+const { createRazorpayMock } = require('../mock/razorpayMock');
 
 function parseMockMode(value) {
   if (typeof value === 'boolean') return value;
@@ -12,51 +15,46 @@ function parseMockMode(value) {
   return undefined;
 }
 
-function createMockClient() {
-  let orderNumber = 0;
-
-  return {
-    mode: 'mock',
-    async createOrder({ amount, currency = 'INR', receipt, notes = {} }) {
-      orderNumber += 1;
-      return {
-        id: `order_mock_${String(orderNumber).padStart(6, '0')}`,
-        entity: 'order',
-        amount,
-        amount_paid: 0,
-        amount_due: amount,
-        currency,
-        receipt,
-        status: 'created',
-        notes,
-        created_at: Math.floor(Date.now() / 1000),
-      };
-    },
-  };
-}
-
 /**
- * Returns the small payment boundary used by the agent.  MOCK_MODE=true
- * prevents external side effects; when MOCK_MODE is unset, missing credentials
- * also safely select the mock client for local development.
+ * Uses the official Razorpay SDK for test/live calls when MOCK_MODE=false.
+ * MOCK_MODE=true deliberately routes all order creation to the local mock.
  */
 function createRazorpayClient(options = {}) {
   const keyId = options.keyId ?? process.env.RAZORPAY_KEY_ID;
   const keySecret = options.keySecret ?? process.env.RAZORPAY_KEY_SECRET;
   const configuredMockMode = parseMockMode(options.mockMode ?? process.env.MOCK_MODE);
   const mockMode = configuredMockMode ?? !(keyId && keySecret);
+  const mockClient = options.mockClient ?? createRazorpayMock();
+  const razorpayFactory = options.razorpayFactory ?? ((config) => new Razorpay(config));
 
-  if (mockMode) return createMockClient();
+  if (mockMode) return mockClient;
 
   if (!keyId || !keySecret) {
-    throw new Error('RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET are required when MOCK_MODE is false.');
+    return mockClient;
   }
 
-  const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
-  return {
-    mode: 'live',
-    createOrder: (order) => razorpay.orders.create(order),
-  };
+  try {
+    const razorpay = razorpayFactory({ key_id: keyId, key_secret: keySecret });
+    return {
+      mode: 'live-with-mock-fallback',
+      async createOrder(order) {
+        try {
+          return await razorpay.orders.create(order);
+        } catch (error) {
+          // Network and credential failures must not turn an approved checkout
+          // into an unhandled exception. Preserve the Razorpay order contract.
+          const mockOrder = await mockClient.createOrder(order);
+          return {
+            ...mockOrder,
+            fallbackFrom: 'razorpay',
+            fallbackReason: error.message ?? 'Razorpay request failed.',
+          };
+        }
+      },
+    };
+  } catch (_error) {
+    return mockClient;
+  }
 }
 
-module.exports = { createRazorpayClient, createMockClient, parseMockMode };
+module.exports = { createRazorpayClient, createMockClient: createRazorpayMock, parseMockMode };

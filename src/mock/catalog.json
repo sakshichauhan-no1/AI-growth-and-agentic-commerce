@@ -16,5 +16,17 @@
     "name": "Mechanical Keyboard",
     "price": 599900,
     "stock": 8
+  },
+  {
+    "id": "sku_extended_warranty_001",
+    "name": "Extended Warranty",
+    "price": 99900,
+    "stock": 100
+  },
+  {
+    "id": "sku_premium_laptop_001",
+    "name": "Premium Laptop",
+    "price": 1200000,
+    "stock": 3
   }
 ]

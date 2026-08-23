@@ -4,6 +4,8 @@ const { existsSync, readFileSync, writeFileSync } = require('node:fs');
 const { resolve } = require('node:path');
 
 const DEFAULT_AUDIT_LOG_PATH = resolve(__dirname, '..', 'mock', 'audit_log.json');
+const AMOUNT_CEILING_PAISE = 1000000;
+const ALLOWED_ACTION_TYPES = new Set(['CREATE_ORDER', 'UPSELL']);
 
 function requirePositiveInteger(value, field) {
   if (!Number.isInteger(value) || value <= 0) {
@@ -11,7 +13,7 @@ function requirePositiveInteger(value, field) {
   }
 }
 
-function proposeAction({ productId, quantity = 1, customerId = 'hello-world' }, catalog) {
+function proposeAction({ productId, quantity = 1, customerId = 'hello-world', actionType = 'CREATE_ORDER' }, catalog) {
   if (!Array.isArray(catalog)) throw new Error('catalog must be an array.');
   requirePositiveInteger(quantity, 'quantity');
 
@@ -21,7 +23,7 @@ function proposeAction({ productId, quantity = 1, customerId = 'hello-world' }, 
 
   return {
     id: `action_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`,
-    type: 'CREATE_ORDER',
+    type: actionType,
     customerId,
     product: { id: product.id, name: product.name },
     quantity,
@@ -32,21 +34,31 @@ function proposeAction({ productId, quantity = 1, customerId = 'hello-world' }, 
 }
 
 function explain(action) {
+  const verb = action.type === 'UPSELL' ? 'Add an upsell' : 'Create an order';
   return {
     ...action,
-    explanation: `Create an INR order for ${action.quantity} × ${action.product.name} totalling ${action.amountPaise} paise.`,
+    explanation: `${verb} in INR for ${action.quantity} x ${action.product.name} totalling ${action.amountPaise} paise.`,
     explainedAt: new Date().toISOString(),
   };
 }
 
 function gate(explainedAction, policy = {}) {
-  const merchantOptedIn = policy.merchantOptedIn ?? true;
-  const spendingCeilingPaise = policy.spendingCeilingPaise ?? Number.MAX_SAFE_INTEGER;
   const reasons = [];
 
-  if (!merchantOptedIn) reasons.push('Merchant has not opted in to order creation.');
-  if (explainedAction.amountPaise > spendingCeilingPaise) {
-    reasons.push(`Order exceeds the ${spendingCeilingPaise}-paise spending ceiling.`);
+  // These are non-negotiable controls. No caller policy can relax them.
+  if (policy.merchantOptIn !== true) {
+    reasons.push('Rejected: merchant opt-in is required before an agent can create a payment action.');
+  }
+  if (!ALLOWED_ACTION_TYPES.has(explainedAction.type)) {
+    reasons.push(`Rejected: action type "${explainedAction.type}" is not allowed. Only CREATE_ORDER and UPSELL are permitted.`);
+  }
+  if (!Number.isInteger(explainedAction.amountPaise) || explainedAction.amountPaise <= 0) {
+    reasons.push('Rejected: transaction amount must be a positive integer number of paise.');
+  } else if (explainedAction.amountPaise > AMOUNT_CEILING_PAISE) {
+    reasons.push('Rejected: transaction exceeds the ₹10,000 agent spending ceiling.');
+  }
+  if (Number.isInteger(policy.spendingCeilingPaise) && explainedAction.amountPaise > policy.spendingCeilingPaise) {
+    reasons.push(`Rejected: transaction exceeds the merchant-configured ${policy.spendingCeilingPaise}-paise spending ceiling.`);
   }
 
   return {
