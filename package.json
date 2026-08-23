@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/index.js",
+    "check": "node --check src/api/razorpayClient.js && node --check src/agent/spine.js && node --check src/index.js",
+    "test": "npm run check"
   },
   "repository": {
     "type": "git",

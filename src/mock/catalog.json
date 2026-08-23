@@ -1,0 +1,20 @@
+[
+  {
+    "id": "sku_wireless_mouse_001",
+    "name": "Wireless Mouse",
+    "price": 129900,
+    "stock": 24
+  },
+  {
+    "id": "sku_usb_c_hub_001",
+    "name": "USB-C Hub",
+    "price": 249900,
+    "stock": 12
+  },
+  {
+    "id": "sku_mechanical_keyboard_001",
+    "name": "Mechanical Keyboard",
+    "price": 599900,
+    "stock": 8
+  }
+]

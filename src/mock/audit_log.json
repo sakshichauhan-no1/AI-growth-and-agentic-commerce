@@ -1,0 +1,28 @@
+[
+  {
+    "actionId": "action_1787510961117_f53dc8",
+    "actionType": "CREATE_ORDER",
+    "executedAt": "2026-08-23T18:49:21.119Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-23T18:49:21.118Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 129900,
+      "amount_paid": 0,
+      "amount_due": 129900,
+      "currency": "INR",
+      "receipt": "action_1787510961117_f53dc8",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787510961117_f53dc8",
+        "productId": "sku_wireless_mouse_001"
+      },
+      "created_at": 1787510961
+    }
+  }
+]
