@@ -3,30 +3,36 @@
     "id": "sku_wireless_mouse_001",
     "name": "Wireless Mouse",
     "price": 129900,
-    "stock": 24
-  },
-  {
-    "id": "sku_usb_c_hub_001",
-    "name": "USB-C Hub",
-    "price": 249900,
-    "stock": 12
-  },
-  {
-    "id": "sku_mechanical_keyboard_001",
-    "name": "Mechanical Keyboard",
-    "price": 599900,
-    "stock": 8
+    "stock": 100
   },
   {
     "id": "sku_extended_warranty_001",
     "name": "Extended Warranty",
-    "price": 99900,
+    "price": 49900,
+    "stock": 100
+  },
+  {
+    "id": "sku_mechanical_keyboard_001",
+    "name": "Mechanical Keyboard",
+    "price": 349900,
+    "stock": 100
+  },
+  {
+    "id": "sku_gaming_headset_001",
+    "name": "Gaming Headset",
+    "price": 249900,
+    "stock": 100
+  },
+  {
+    "id": "sku_4k_monitor_001",
+    "name": "4K Monitor",
+    "price": 2499900,
     "stock": 100
   },
   {
     "id": "sku_premium_laptop_001",
     "name": "Premium Laptop",
-    "price": 1200000,
-    "stock": 3
+    "price": 8500000,
+    "stock": 100
   }
 ]

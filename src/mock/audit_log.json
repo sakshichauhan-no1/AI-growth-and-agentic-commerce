@@ -681,5 +681,141 @@
       "fallbackFrom": "razorpay",
       "fallbackReason": "Razorpay request failed."
     }
+  },
+  {
+    "actionId": "action_1787769536502_cc8f21",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-26T18:38:56.506Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-26T18:38:56.502Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 129900,
+      "amount_paid": 0,
+      "amount_due": 129900,
+      "currency": "INR",
+      "receipt": "action_1787769536502_cc8f21",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787769536502_cc8f21",
+        "productId": "sku_wireless_mouse_001"
+      },
+      "created_at": 1787769536,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
+  },
+  {
+    "actionId": "action_1787771641508_dd4f5c",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-26T19:14:01.513Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-26T19:14:01.508Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 129900,
+      "amount_paid": 0,
+      "amount_due": 129900,
+      "currency": "INR",
+      "receipt": "action_1787771641508_dd4f5c",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787771641508_dd4f5c",
+        "productId": "sku_wireless_mouse_001"
+      },
+      "created_at": 1787771641,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
+  },
+  {
+    "actionId": "action_1787771667674_e8e92b",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-26T19:14:27.675Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-26T19:14:27.674Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 129900,
+      "amount_paid": 0,
+      "amount_due": 129900,
+      "currency": "INR",
+      "receipt": "action_1787771667674_e8e92b",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787771667674_e8e92b",
+        "productId": "sku_wireless_mouse_001"
+      },
+      "created_at": 1787771667,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
+  },
+  {
+    "actionId": "action_1787771709264_4c495a",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-26T19:15:09.265Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-26T19:15:09.265Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 599900,
+      "amount_paid": 0,
+      "amount_due": 599900,
+      "currency": "INR",
+      "receipt": "action_1787771709264_4c495a",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787771709264_4c495a",
+        "productId": "sku_mechanical_keyboard_001"
+      },
+      "created_at": 1787771709,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
   }
 ]

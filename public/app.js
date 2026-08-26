@@ -37,18 +37,33 @@ function stage(name, statusObj) {
   const el = $(`[data-step="${name}"]`);
   if (!el) return;
   const b = el.querySelector('b');
+  
   if (statusObj?.status === 'success') {
     el.className = 'approved';
     b.textContent = '✓';
+    el.firstChild.textContent = name + ' ';
   } else if (statusObj?.status === 'failed') {
     el.className = 'failed';
     b.textContent = '❌';
+    if (name === 'Gate' && statusObj.reasons && statusObj.reasons.some(r => r.includes('>₹10k Limit') || r.includes('spending ceiling'))) {
+      el.firstChild.textContent = 'Gate: Rejected (>₹10k Limit) ';
+    } else {
+      el.firstChild.textContent = name + ' ';
+    }
   } else if (statusObj?.status === 'skipped') {
     el.className = '';
     b.textContent = '--';
+    if (name === 'Execute' && statusObj.blocked) {
+      el.firstChild.textContent = 'Execute: Blocked ';
+    } else if (name === 'Propose' && statusObj.text) {
+      el.firstChild.textContent = statusObj.text + ' ';
+    } else {
+      el.firstChild.textContent = name + ' ';
+    }
   } else {
     el.className = '';
     b.textContent = '--';
+    el.firstChild.textContent = name + ' ';
   }
 }
 
