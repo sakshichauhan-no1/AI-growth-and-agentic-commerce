@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 /* ── DOM helpers ── */
 const $ = (sel) => document.querySelector(sel);
@@ -33,10 +33,34 @@ function showView() {
 }
 
 /* ── Spine step indicator ── */
-function stage(name, ok) {
+function stage(name, statusObj) {
   const el = $(`[data-step="${name}"]`);
-  el.className = ok ? 'approved' : 'failed';
-  el.querySelector('b').textContent = ok ? 'V' : 'X';
+  if (!el) return;
+  const b = el.querySelector('b');
+  if (statusObj?.status === 'success') {
+    el.className = 'approved';
+    b.textContent = '✓';
+  } else if (statusObj?.status === 'failed') {
+    el.className = 'failed';
+    b.textContent = '❌';
+  } else if (statusObj?.status === 'skipped') {
+    el.className = '';
+    b.textContent = '--';
+  } else {
+    el.className = '';
+    b.textContent = '--';
+  }
+}
+
+function renderAuditLog(auditLog) {
+  $('#tx-table-body').innerHTML = auditLog.slice().reverse()
+    .map(x => `<tr>
+      <td>${new Date(x.executedAt || Date.now()).toLocaleTimeString()}</td>
+      <td>${x.actionType || 'N/A'}</td>
+      <td>${x.gate?.approved ? 'Approved' : 'Rejected'}</td>
+      <td>${x.status}</td>
+    </tr>`).join('') ||
+    '<tr><td colspan="4">No transactions yet.</td></tr>';
 }
 
 /* ── Load audit history ── */
@@ -44,14 +68,7 @@ async function loadAudit() {
   const r = await fetch('/api/audit', { headers: authHeaders() });
   const d = await r.json();
   if (!r.ok) { signOut(); return; }
-  $('#rows').innerHTML = d.slice().reverse()
-    .map(x => `<tr>
-      <td>${new Date(x.executedAt).toLocaleTimeString()}</td>
-      <td>${x.actionType}</td>
-      <td>${x.gate.approved ? 'Approved' : 'Rejected'}</td>
-      <td>${x.status}</td>
-    </tr>`).join('') ||
-    '<tr><td colspan="4">No transactions yet.</td></tr>';
+  renderAuditLog(d);
 }
 
 /* ══════════════════════════════════════════════════
@@ -114,6 +131,26 @@ $('#auth-form').onsubmit = async (e) => {
 ══════════════════════════════════════════════════ */
 $('#sign-out').onclick = signOut;
 
+/* ── Helper: Scroll to latest message ── */
+function scrollToBottom() {
+  const chatMessages = $('#chat-messages');
+  if (chatMessages) {
+    chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+  }
+}
+
+/* ── Helper: Append Chat Bubble ── */
+function appendBubble(text, sender) {
+  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  $('#chat-messages').innerHTML += `
+    <div class="bubble-group ${sender}">
+      <div class="bubble ${sender}">${text}</div>
+      <div class="bubble-timestamp">${time}</div>
+    </div>
+  `;
+  scrollToBottom();
+}
+
 /* ══════════════════════════════════════════════════
    CHAT FORM
 ══════════════════════════════════════════════════ */
@@ -121,6 +158,11 @@ $('#chat-form').onsubmit = async (e) => {
   e.preventDefault();   /* Prevent page reload — CRITICAL */
 
   const q = $('#query').value;
+  if (!q.trim()) return;
+
+  appendBubble(q, 'user');
+  $('#query').value = '';
+
   const r = await fetch('/api/agent/chat', {
     method:  'POST',
     headers: authHeaders(),
@@ -133,14 +175,29 @@ $('#chat-form').onsubmit = async (e) => {
     return;
   }
 
-  ['Propose', 'Explain', 'Gate', 'Execute', 'Audit'].forEach((name, i) => {
-    stage(name, i < 3 ? d.gate.approved : d.execution?.status === 'executed');
-  });
+  appendBubble(d.agentResponse, 'agent');
 
-  $('#reasoning').textContent =
-    d.gate.reasons.join(' ') || d.explained?.explanation || '';
-  $('#query').value = '';
-  loadAudit();
+  if (d.spine) {
+    stage('Propose', d.spine.propose);
+    stage('Explain', d.spine.explain);
+    stage('Gate', d.spine.gate);
+    stage('Execute', d.spine.execute);
+    stage('Audit', d.spine.audit);
+  }
+
+  if (d.spine?.gate?.reasons?.length) {
+    $('#reasoning').textContent = d.spine.gate.reasons.join(' ');
+  } else if (d.spine?.propose?.error) {
+    $('#reasoning').textContent = d.spine.propose.error;
+  } else {
+    $('#reasoning').textContent = 'Ready.';
+  }
+
+  if (d.auditLog) {
+    renderAuditLog(d.auditLog);
+  } else {
+    loadAudit();
+  }
 };
 
 /* ══════════════════════════════════════════════════

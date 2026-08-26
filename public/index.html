@@ -1,5 +1,6 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -7,6 +8,7 @@
   <meta name="description" content="Agentic Checkout — safe autonomous commerce with a full audit spine.">
   <link rel="stylesheet" href="/style.css">
 </head>
+
 <body>
 
   <section id="auth-view" class="auth-view">
@@ -15,7 +17,7 @@
       <h1>Welcome back.</h1>
       <p>Sign in to see your private checkout history.</p>
       <div class="tabs">
-        <button id="tab-login"  data-tab="login"  class="active">Sign In</button>
+        <button id="tab-login" data-tab="login" class="active">Sign In</button>
         <button id="tab-signup" data-tab="signup">Sign Up</button>
       </div>
       <form id="auth-form" novalidate>
@@ -56,10 +58,11 @@
       <section class="workspace">
         <article class="panel">
           <h2>Conversation</h2>
-          <div id="chat" class="chat"></div>
+          <div id="chat-messages" class="chat"></div>
           <div class="quick-actions">
             <button type="button" data-query="I want to buy a wireless mouse">Buy a mouse</button>
             <button type="button" data-query="Add an extended warranty">Add warranty</button>
+            <button type="button" data-query="Hello">Hello</button>
           </div>
           <form id="chat-form" class="composer">
             <input id="query" placeholder="Type your request" required autocomplete="off">
@@ -68,12 +71,12 @@
         </article>
         <article class="panel">
           <h2>Spine inspector</h2>
-          <ol class="spine">
+          <ol id="spine-container" class="spine">
             <li data-step="Propose">Propose <b>--</b></li>
             <li data-step="Explain">Explain <b>--</b></li>
-            <li data-step="Gate">Gate    <b>--</b></li>
+            <li data-step="Gate">Gate <b>--</b></li>
             <li data-step="Execute">Execute <b>--</b></li>
-            <li data-step="Audit">Audit   <b>--</b></li>
+            <li data-step="Audit">Audit <b>--</b></li>
           </ol>
           <p id="reasoning" class="reasoning">Ready.</p>
         </article>
@@ -81,9 +84,14 @@
           <h2>Your transactions</h2>
           <table>
             <thead>
-              <tr><th>TIME</th><th>ACTION</th><th>GATE</th><th>RESULT</th></tr>
+              <tr>
+                <th>TIME</th>
+                <th>ACTION</th>
+                <th>GATE</th>
+                <th>RESULT</th>
+              </tr>
             </thead>
-            <tbody id="rows"></tbody>
+            <tbody id="tx-table-body"></tbody>
           </table>
         </article>
       </section>
@@ -92,4 +100,5 @@
 
   <script src="/app.js"></script>
 </body>
+
 </html>

@@ -1,4 +1,4 @@
-﻿:root{--ink:#10231d;--green:#168065;--paper:#f4f7f2;--line:#dbe5df;--red:#c14338}
+:root{--ink:#10231d;--green:#168065;--paper:#f4f7f2;--line:#dbe5df;--red:#c14338}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);font:14px Arial,sans-serif}
 button,input{font:inherit}
@@ -37,12 +37,24 @@ input{border:1px solid var(--line);border-radius:8px;padding:12px}
 .workspace{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;padding:0 28px 28px}
 .panel{background:white;border:1px solid var(--line);border-radius:16px;padding:20px;min-height:390px}
 .quick-actions{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
-.quick-actions button{background:#e9f0eb;color:var(--ink);font-size:12px;padding:8px 12px}
+.quick-actions button{background:#f0f2f5;color:var(--ink);font-size:12px;padding:8px 16px;border-radius:24px;border:1px solid var(--line);transition:background 0.2s}
+.quick-actions button:hover{background:#e1e4e8}
 
 /* Chat */
-.chat{height:210px;background:#f5f8f5;padding:12px;overflow:auto;border-radius:8px;margin-bottom:4px}
-.composer{display:flex;margin-top:14px;gap:6px}
-.composer input{flex:1}
+.chat{height:300px;background:#ffffff;padding:16px;overflow-y:auto;border-radius:12px;box-shadow:inset 0 2px 6px rgba(0,0,0,0.05);margin-bottom:8px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
+.bubble-group {display:flex;flex-direction:column;max-width:85%}
+.bubble-group.user {align-self:flex-end;align-items:flex-end}
+.bubble-group.agent {align-self:flex-start;align-items:flex-start}
+.bubble{padding:10px 14px;line-height:1.4;animation:slideUpFadeIn 0.3s ease forwards}
+.bubble.user{background:#0066ff;color:white;border-radius:18px 18px 0 18px}
+.bubble.agent{background:#f0f2f5;color:#10231d;border:1px solid #dbe5df;border-radius:18px 18px 18px 0}
+.bubble-timestamp{font-size:10px;color:#888;margin-top:4px}
+@keyframes slideUpFadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.composer{display:flex;margin-top:14px;gap:8px;align-items:center}
+.composer input{flex:1;border-radius:24px;padding:12px 18px;border:1px solid var(--line);outline:none}
+.composer input:focus{border-color:#0066ff}
+.composer button{border-radius:24px;padding:12px 20px;background:#0066ff;font-weight:bold}
+.composer button:hover{background:#005ce6}
 
 /* Spine */
 .spine{list-style:none;padding:0;margin:0}
