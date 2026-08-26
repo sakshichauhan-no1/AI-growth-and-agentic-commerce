@@ -346,5 +346,204 @@
     },
     "status": "failed",
     "error": "Action rejected by gate: Rejected: transaction exceeds the ₹10,000 agent spending ceiling."
+  },
+  {
+    "actionId": "action_1787512776424_0d221a",
+    "actionType": "CREATE_ORDER",
+    "executedAt": "2026-08-23T19:19:36.580Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-23T19:19:36.425Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 129900,
+      "amount_paid": 0,
+      "amount_due": 129900,
+      "currency": "INR",
+      "receipt": "action_1787512776424_0d221a",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787512776424_0d221a",
+        "productId": "sku_wireless_mouse_001"
+      },
+      "created_at": 1787512777,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
+  },
+  {
+    "actionId": "action_1787512789696_f7e27b",
+    "actionType": "UPSELL",
+    "executedAt": "2026-08-23T19:19:49.696Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-23T19:19:49.696Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 99900,
+      "amount_paid": 0,
+      "amount_due": 99900,
+      "currency": "INR",
+      "receipt": "action_1787512789696_f7e27b",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787512789696_f7e27b",
+        "productId": "sku_extended_warranty_001"
+      },
+      "created_at": 1787512789,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
+  },
+  {
+    "actionId": "action_1787512798110_b67c22",
+    "actionType": "CREATE_ORDER",
+    "executedAt": "2026-08-23T19:19:58.111Z",
+    "gate": {
+      "approved": false,
+      "reasons": [
+        "Rejected: transaction exceeds the ₹10,000 agent spending ceiling."
+      ],
+      "decidedAt": "2026-08-23T19:19:58.110Z"
+    },
+    "status": "failed",
+    "error": "Action rejected by gate: Rejected: transaction exceeds the ₹10,000 agent spending ceiling."
+  },
+  {
+    "actionId": "action_1787513651042_12391a",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo_001",
+    "executedAt": "2026-08-23T19:34:11.042Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-23T19:34:11.042Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 129900,
+      "amount_paid": 0,
+      "amount_due": 129900,
+      "currency": "INR",
+      "receipt": "action_1787513651042_12391a",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787513651042_12391a",
+        "productId": "sku_wireless_mouse_001"
+      },
+      "created_at": 1787513651
+    }
+  },
+  {
+    "actionId": "action_1787717015208_53b0d7",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-26T04:03:36.097Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-26T04:03:35.208Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 129900,
+      "amount_paid": 0,
+      "amount_due": 129900,
+      "currency": "INR",
+      "receipt": "action_1787717015208_53b0d7",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787717015208_53b0d7",
+        "productId": "sku_wireless_mouse_001"
+      },
+      "created_at": 1787717016,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
+  },
+  {
+    "actionId": "action_1787717016131_2b88da",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-26T04:03:36.131Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-26T04:03:36.131Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 129900,
+      "amount_paid": 0,
+      "amount_due": 129900,
+      "currency": "INR",
+      "receipt": "action_1787717016131_2b88da",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787717016131_2b88da",
+        "productId": "sku_wireless_mouse_001"
+      },
+      "created_at": 1787717016,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
+  },
+  {
+    "actionId": "action_1787717023995_191330",
+    "actionType": "UPSELL",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-26T04:03:43.996Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-26T04:03:43.995Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 99900,
+      "amount_paid": 0,
+      "amount_due": 99900,
+      "currency": "INR",
+      "receipt": "action_1787717023995_191330",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787717023995_191330",
+        "productId": "sku_extended_warranty_001"
+      },
+      "created_at": 1787717024,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
   }
 ]

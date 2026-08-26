@@ -13,7 +13,7 @@ function requirePositiveInteger(value, field) {
   }
 }
 
-function proposeAction({ productId, quantity = 1, customerId = 'hello-world', actionType = 'CREATE_ORDER' }, catalog) {
+function proposeAction({ productId, quantity = 1, customerId = 'hello-world', userId = null, userName = null, userEmail = null, actionType = 'CREATE_ORDER' }, catalog) {
   if (!Array.isArray(catalog)) throw new Error('catalog must be an array.');
   requirePositiveInteger(quantity, 'quantity');
 
@@ -25,6 +25,9 @@ function proposeAction({ productId, quantity = 1, customerId = 'hello-world', ac
     id: `action_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`,
     type: actionType,
     customerId,
+    userId,
+    userName,
+    userEmail,
     product: { id: product.id, name: product.name },
     quantity,
     amountPaise: product.price * quantity,
@@ -92,6 +95,8 @@ async function execute(gatedAction, { client, auditLogPath = DEFAULT_AUDIT_LOG_P
   const baseAudit = {
     actionId: gatedAction?.id ?? null,
     actionType: gatedAction?.type ?? null,
+    userId: gatedAction?.userId ?? null,
+    user: gatedAction?.userId ? { id: gatedAction.userId, name: gatedAction.userName, email: gatedAction.userEmail } : null,
     executedAt: new Date().toISOString(),
     gate: gatedAction?.gate ?? null,
   };

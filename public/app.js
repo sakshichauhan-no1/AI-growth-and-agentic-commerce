@@ -1,10 +1,164 @@
-'use strict';
-const chat=document.querySelector('#chat'),form=document.querySelector('#chat-form'),input=document.querySelector('#query'),reasoning=document.querySelector('#reasoning'),auditRows=document.querySelector('#audit-rows');
-function addMessage(role,text){const message=document.createElement('div');message.className=`message ${role}`;const label=document.createElement('span');label.textContent=role==='buyer'?'You':'Agent';message.append(label,document.createTextNode(text));chat.append(message);chat.scrollTop=chat.scrollHeight;}
-function setStage(name,state,detail){const item=document.querySelector(`[data-stage="${name}"]`);item.className=state;item.querySelector('small').textContent=detail;item.querySelector('b').textContent=['approved','executed'].includes(state)?'✓':['rejected','failed'].includes(state)?'×':'•';}
-function resetSpine(){document.querySelectorAll('.spine li').forEach((item)=>{item.className='';item.querySelector('b').textContent='—';});setStage('propose','pending','Building a typed action');}
-function renderSpine(data){setStage('propose','approved',`${data.proposed.type}: ${data.proposed.product.name}`);setStage('explain','approved',data.explained.explanation);const allowed=data.gate.approved;setStage('gate',allowed?'approved':'rejected',allowed?'Approved by policy':data.gate.reasons.join(' '));setStage('execute',data.execution.status==='executed'?'executed':'failed',data.execution.status==='executed'?'Order created':data.execution.error||'Blocked before payment');setStage('audit',data.audit?'approved':'failed',data.audit?`Logged ${data.audit.status}`:'No record');reasoning.textContent=allowed?data.explained.explanation:data.gate.reasons.join(' ');}
-function formatTime(timestamp){return timestamp?new Intl.DateTimeFormat(undefined,{hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date(timestamp)):'—';}
-async function loadAudit(){const response=await fetch('/api/audit');const records=await response.json();auditRows.replaceChildren();records.slice().reverse().forEach((entry)=>{const row=document.createElement('tr'),approved=entry.gate?.approved===true,result=entry.status==='executed'?'Executed':'Blocked';[formatTime(entry.executedAt),entry.actionType||'—',approved?'Approved':'Rejected',result].forEach((value,index)=>{const cell=document.createElement('td');cell.textContent=value;if(index===2)cell.className=approved?'green':'red';if(index===3)cell.className=entry.status==='executed'?'green':'red';row.append(cell);});auditRows.append(row);});}
-async function submitQuery(query){addMessage('buyer',query);resetSpine();input.value='';try{const response=await fetch('/api/agent/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query})}),data=await response.json();if(!response.ok)throw new Error(data.error||'Request failed.');renderSpine(data);addMessage('agent',data.execution.status==='executed'?'Approved and recorded. Your order is ready.':data.gate.reasons.join(' '));await loadAudit();}catch(error){reasoning.textContent=error.message;addMessage('agent',error.message);}}
-form.addEventListener('submit',(event)=>{event.preventDefault();const query=input.value.trim();if(query)submitQuery(query);});document.querySelectorAll('[data-query]').forEach((button)=>button.addEventListener('click',()=>submitQuery(button.dataset.query)));document.querySelector('#refresh').addEventListener('click',loadAudit);loadAudit().catch(()=>{auditRows.innerHTML='<tr><td colspan="4">Audit history is unavailable.</td></tr>';});
+﻿'use strict';
+
+/* ── DOM helpers ── */
+const $ = (sel) => document.querySelector(sel);
+
+/* ── Session state ── */
+const SESSION_KEY = 'agentic-session';
+let mode    = 'login';
+let session = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+
+/* ── Auth headers ── */
+const authHeaders = () => ({
+  Authorization: `Bearer ${session.token}`,
+  'Content-Type': 'application/json',
+});
+
+/* ══════════════════════════════════════════════════
+   UI STATE SWITCHER
+   Shows #auth-view or #dashboard-view based on
+   whether a valid session object is in memory.
+══════════════════════════════════════════════════ */
+function showView() {
+  const authed = !!session;
+
+  /* Hide/show with display so CSS transitions work cleanly */
+  $('#auth-view').style.display      = authed ? 'none'  : '';
+  $('#dashboard-view').style.display = authed ? 'block' : 'none';
+
+  if (authed) {
+    $('#user-greeting').textContent = 'Hi, ' + session.user.name;
+    loadAudit();
+  }
+}
+
+/* ── Spine step indicator ── */
+function stage(name, ok) {
+  const el = $(`[data-step="${name}"]`);
+  el.className = ok ? 'approved' : 'failed';
+  el.querySelector('b').textContent = ok ? 'V' : 'X';
+}
+
+/* ── Load audit history ── */
+async function loadAudit() {
+  const r = await fetch('/api/audit', { headers: authHeaders() });
+  const d = await r.json();
+  if (!r.ok) { signOut(); return; }
+  $('#rows').innerHTML = d.slice().reverse()
+    .map(x => `<tr>
+      <td>${new Date(x.executedAt).toLocaleTimeString()}</td>
+      <td>${x.actionType}</td>
+      <td>${x.gate.approved ? 'Approved' : 'Rejected'}</td>
+      <td>${x.status}</td>
+    </tr>`).join('') ||
+    '<tr><td colspan="4">No transactions yet.</td></tr>';
+}
+
+/* ══════════════════════════════════════════════════
+   SIGN OUT
+══════════════════════════════════════════════════ */
+function signOut() {
+  session = null;
+  localStorage.removeItem(SESSION_KEY);
+  showView();
+}
+
+/* ══════════════════════════════════════════════════
+   TAB SWITCHER  (Sign In / Sign Up)
+══════════════════════════════════════════════════ */
+document.querySelectorAll('[data-tab]').forEach(btn => {
+  btn.onclick = () => {
+    mode = btn.dataset.tab;
+    document.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    $('#name-wrap').hidden       = mode === 'login';
+    $('#auth-submit').textContent = mode === 'login' ? 'Sign In' : 'Create Account';
+    $('#auth-error').textContent  = '';
+  };
+});
+
+/* ══════════════════════════════════════════════════
+   AUTH FORM  (Sign In / Sign Up)
+══════════════════════════════════════════════════ */
+$('#auth-form').onsubmit = async (e) => {
+  e.preventDefault();   /* Prevent page reload — CRITICAL */
+
+  $('#auth-error').textContent = '';
+
+  const body = {
+    email:    $('#email').value,
+    password: $('#password').value,
+  };
+  if (mode === 'signup') body.name = $('#name').value;
+
+  const r = await fetch(`/api/auth/${mode}`, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(body),
+  });
+  const d = await r.json();
+
+  if (!r.ok) {
+    $('#auth-error').textContent = d.error || 'Something went wrong.';
+    return;
+  }
+
+  /* Store session and switch view */
+  session = d;
+  localStorage.setItem(SESSION_KEY, JSON.stringify(d));
+  showView();
+};
+
+/* ══════════════════════════════════════════════════
+   SIGN OUT BUTTON
+══════════════════════════════════════════════════ */
+$('#sign-out').onclick = signOut;
+
+/* ══════════════════════════════════════════════════
+   CHAT FORM
+══════════════════════════════════════════════════ */
+$('#chat-form').onsubmit = async (e) => {
+  e.preventDefault();   /* Prevent page reload — CRITICAL */
+
+  const q = $('#query').value;
+  const r = await fetch('/api/agent/chat', {
+    method:  'POST',
+    headers: authHeaders(),
+    body:    JSON.stringify({ query: q }),
+  });
+  const d = await r.json();
+
+  if (!r.ok) {
+    $('#reasoning').textContent = d.error;
+    return;
+  }
+
+  ['Propose', 'Explain', 'Gate', 'Execute', 'Audit'].forEach((name, i) => {
+    stage(name, i < 3 ? d.gate.approved : d.execution?.status === 'executed');
+  });
+
+  $('#reasoning').textContent =
+    d.gate.reasons.join(' ') || d.explained?.explanation || '';
+  $('#query').value = '';
+  loadAudit();
+};
+
+/* ══════════════════════════════════════════════════
+   QUICK-ACTION BUTTONS
+══════════════════════════════════════════════════ */
+document.querySelectorAll('[data-query]').forEach(btn => {
+  btn.onclick = () => {
+    $('#query').value = btn.dataset.query;
+    $('#chat-form').requestSubmit();
+  };
+});
+
+/* ══════════════════════════════════════════════════
+   BOOTSTRAP  –  validate existing session on load
+══════════════════════════════════════════════════ */
+if (session) {
+  fetch('/api/auth/me', { headers: authHeaders() })
+    .then(r => r.ok ? showView() : signOut());
+} else {
+  showView();
+}
