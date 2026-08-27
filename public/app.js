@@ -38,6 +38,17 @@ function stage(name, statusObj) {
   if (!el) return;
   const b = el.querySelector('b');
   
+  if (typeof statusObj === 'string') {
+    el.className = '';
+    b.textContent = '--';
+    if (statusObj === '—') {
+      el.firstChild.textContent = name + ' ';
+    } else {
+      el.firstChild.textContent = name + ': ' + statusObj + ' ';
+    }
+    return;
+  }
+  
   if (statusObj?.status === 'success') {
     el.className = 'approved';
     b.textContent = '✓';

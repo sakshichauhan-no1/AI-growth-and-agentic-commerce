@@ -817,5 +817,481 @@
       "fallbackFrom": "razorpay",
       "fallbackReason": "Razorpay request failed."
     }
+  },
+  {
+    "actionId": "action_1787772629571_00c131",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-26T19:30:29.575Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-26T19:30:29.571Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 599900,
+      "amount_paid": 0,
+      "amount_due": 599900,
+      "currency": "INR",
+      "receipt": "action_1787772629571_00c131",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787772629571_00c131",
+        "productId": "sku_mechanical_keyboard_001"
+      },
+      "created_at": 1787772629,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
+  },
+  {
+    "actionId": "action_1787773538594_d23571",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-26T19:45:38.598Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-26T19:45:38.594Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 129900,
+      "amount_paid": 0,
+      "amount_due": 129900,
+      "currency": "INR",
+      "receipt": "action_1787773538594_d23571",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787773538594_d23571",
+        "productId": "sku_wireless_mouse_001"
+      },
+      "created_at": 1787773539,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
+  },
+  {
+    "actionId": "action_1787773542089_5c9e27",
+    "actionType": "UPSELL",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-26T19:45:42.090Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-26T19:45:42.090Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 99900,
+      "amount_paid": 0,
+      "amount_due": 99900,
+      "currency": "INR",
+      "receipt": "action_1787773542089_5c9e27",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787773542089_5c9e27",
+        "productId": "sku_extended_warranty_001"
+      },
+      "created_at": 1787773542,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
+  },
+  {
+    "actionId": "action_1787773545959_5c0fff",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-26T19:45:45.960Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-26T19:45:45.959Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 599900,
+      "amount_paid": 0,
+      "amount_due": 599900,
+      "currency": "INR",
+      "receipt": "action_1787773545959_5c0fff",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787773545959_5c0fff",
+        "productId": "sku_mechanical_keyboard_001"
+      },
+      "created_at": 1787773546,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
+  },
+  {
+    "actionId": "action_1787773603270_376b7e",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-26T19:46:43.271Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-26T19:46:43.270Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 249900,
+      "amount_paid": 0,
+      "amount_due": 249900,
+      "currency": "INR",
+      "receipt": "action_1787773603270_376b7e",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787773603270_376b7e",
+        "productId": "sku_usb_c_hub_001"
+      },
+      "created_at": 1787773603,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
+  },
+  {
+    "actionId": "action_1787773611732_376c8e",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-26T19:46:51.733Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-26T19:46:51.732Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 129900,
+      "amount_paid": 0,
+      "amount_due": 129900,
+      "currency": "INR",
+      "receipt": "action_1787773611732_376c8e",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787773611732_376c8e",
+        "productId": "sku_wireless_mouse_001"
+      },
+      "created_at": 1787773611,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
+  },
+  {
+    "actionId": "action_1787774565178_33bccd",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-26T20:02:45.974Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-26T20:02:45.178Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 129900,
+      "amount_paid": 0,
+      "amount_due": 129900,
+      "currency": "INR",
+      "receipt": "action_1787774565178_33bccd",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787774565178_33bccd",
+        "productId": "sku_mouse"
+      },
+      "created_at": 1787774566,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
+  },
+  {
+    "actionId": "action_1787774577374_2c2b56",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-26T20:02:57.375Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-26T20:02:57.374Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 89900,
+      "amount_paid": 0,
+      "amount_due": 89900,
+      "currency": "INR",
+      "receipt": "action_1787774577374_2c2b56",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787774577374_2c2b56",
+        "productId": "sku_stand"
+      },
+      "created_at": 1787774577,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
+  },
+  {
+    "actionId": "action_1787774587147_5dd2c0",
+    "actionType": "UPSELL",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-26T20:03:07.148Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-26T20:03:07.147Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 49900,
+      "amount_paid": 0,
+      "amount_due": 49900,
+      "currency": "INR",
+      "receipt": "action_1787774587147_5dd2c0",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787774587147_5dd2c0",
+        "productId": "sku_warranty"
+      },
+      "created_at": 1787774587,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
+  },
+  {
+    "actionId": "action_1787774594034_906d5b",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-26T20:03:14.035Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-26T20:03:14.035Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 89900,
+      "amount_paid": 0,
+      "amount_due": 89900,
+      "currency": "INR",
+      "receipt": "action_1787774594034_906d5b",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787774594034_906d5b",
+        "productId": "sku_stand"
+      },
+      "created_at": 1787774594,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
+  },
+  {
+    "actionId": "action_1787774893165_a5f418",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-26T20:08:13.167Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-26T20:08:13.165Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 129900,
+      "amount_paid": 0,
+      "amount_due": 129900,
+      "currency": "INR",
+      "receipt": "action_1787774893165_a5f418",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787774893165_a5f418",
+        "productId": "sku_mouse"
+      },
+      "created_at": 1787774893,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
+  },
+  {
+    "actionId": "action_1787774905410_804ef7",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-26T20:08:25.411Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-26T20:08:25.410Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 219900,
+      "amount_paid": 0,
+      "amount_due": 219900,
+      "currency": "INR",
+      "receipt": "action_1787774905410_804ef7",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787774905410_804ef7",
+        "productId": "sku_webcam"
+      },
+      "created_at": 1787774905,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
+  },
+  {
+    "actionId": "action_1787774917710_c21339",
+    "actionType": "UPSELL",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-26T20:08:37.711Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-26T20:08:37.710Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 49900,
+      "amount_paid": 0,
+      "amount_due": 49900,
+      "currency": "INR",
+      "receipt": "action_1787774917710_c21339",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787774917710_c21339",
+        "productId": "sku_warranty"
+      },
+      "created_at": 1787774917,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
+  },
+  {
+    "actionId": "action_1787850951753_adc0fc",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-27T17:15:52.397Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-27T17:15:51.753Z"
+    },
+    "status": "executed",
+    "order": {
+      "id": "order_mock_000001",
+      "entity": "order",
+      "amount": 89900,
+      "amount_paid": 0,
+      "amount_due": 89900,
+      "currency": "INR",
+      "receipt": "action_1787850951753_adc0fc",
+      "status": "created",
+      "notes": {
+        "actionId": "action_1787850951753_adc0fc",
+        "productId": "sku_stand"
+      },
+      "created_at": 1787850952,
+      "fallbackFrom": "razorpay",
+      "fallbackReason": "Razorpay request failed."
+    }
   }
 ]

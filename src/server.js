@@ -26,8 +26,11 @@ function parseBuyerQuery(query) {
   if (typeof query !== 'string' || !query.trim()) throw new Error('Please tell me what you want to buy.');
   const q = query.toLowerCase();
   
-  if (/^(hi|hello|hey|greetings|good morning|good evening|bye|goodbye)$/i.test(q.trim())) {
+  if (/^(hi|hello|hey|good morning|good evening|greetings|yello|hola)\b/i.test(q.trim())) {
     return { type: 'GREETING' };
+  }
+  if (/^(bye|goodbye|see ya|thanks|thank you|cya)\b/i.test(q.trim())) {
+    return { type: 'FAREWELL' };
   }
   
   const queryWords = q.replace(/[^a-z0-9\s-]/g, ' ').split(/\s+/).filter(Boolean);
@@ -71,12 +74,13 @@ app.post('/api/agent/chat',async(req,res)=>{
     try{request=parseBuyerQuery(req.body?.query);}catch(e){spine.propose={status:'failed',error:e.message};return res.json({success:false,agentResponse:e.message,spine,auditLog:readAuditLog().filter(x=>x.userId===user.id)});}
     
     if (request.type === 'GREETING') {
-      spine.propose={status:'skipped', text: 'Informational Query'};
-      spine.explain={status:'skipped'};
-      spine.gate={status:'skipped'};
-      spine.execute={status:'skipped'};
-      spine.audit={status:'skipped'};
-      return res.json({ success: true, agentResponse: "Hello! I am your agentic checkout assistant. How can I help you today?", spine, auditLog:readAuditLog().filter(x=>x.userId===user.id) });
+      const greetingSpine = { propose: '—', explain: '—', gate: 'Informational Query', execute: 'No Money Action', audit: 'Skipped' };
+      return res.json({ success: true, agentResponse: "Hello", spine: greetingSpine, auditLog:readAuditLog().filter(x=>x.userId===user.id) });
+    }
+    
+    if (request.type === 'FAREWELL') {
+      const farewellSpine = { propose: '—', explain: '—', gate: 'Informational Query', execute: 'No Money Action', audit: 'Skipped' };
+      return res.json({ success: true, agentResponse: "Bye, see u soon", spine: farewellSpine, auditLog:readAuditLog().filter(x=>x.userId===user.id) });
     }
     
     if (request.type === 'FALLBACK') {
