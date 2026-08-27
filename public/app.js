@@ -5,7 +5,7 @@ const $ = (sel) => document.querySelector(sel);
 
 /* ── Session state ── */
 const SESSION_KEY = 'agentic-session';
-let mode    = 'login';
+let mode = 'login';
 let session = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
 
 /* ── Auth headers ── */
@@ -16,28 +16,51 @@ const authHeaders = () => ({
 
 /* ══════════════════════════════════════════════════
    UI STATE SWITCHER
-   Shows #auth-view or #dashboard-view based on
-   whether a valid session object is in memory.
+   Shows #auth-view or #dashboard-view based on session
 ══════════════════════════════════════════════════ */
 function showView() {
   const authed = !!session;
 
-  /* Hide/show with display so CSS transitions work cleanly */
-  $('#auth-view').style.display      = authed ? 'none'  : '';
+  $('#auth-view').style.display = authed ? 'none' : '';
   $('#dashboard-view').style.display = authed ? 'block' : 'none';
 
   if (authed) {
     $('#user-greeting').textContent = 'Hi, ' + session.user.name;
+    showPage('dashboard');
     loadAudit();
   }
 }
+
+/* ══════════════════════════════════════════════════
+   PAGE VIEW SWITCHER (Dashboard vs Audit Logs Page)
+══════════════════════════════════════════════════ */
+function showPage(pageName) {
+  const mainDash = $('#main-dashboard-content');
+  const auditView = $('#audit-page-view');
+
+  if (pageName === 'audit') {
+    if (mainDash) mainDash.style.display = 'none';
+    if (auditView) auditView.style.display = 'block';
+    loadAudit();
+  } else {
+    if (mainDash) mainDash.style.display = 'block';
+    if (auditView) auditView.style.display = 'none';
+  }
+}
+
+/* Bind Navigation Clicks */
+const navDash = $('#nav-dashboard');
+const navAudit = $('#nav-audit');
+
+if (navDash) navDash.onclick = (e) => { e.preventDefault(); showPage('dashboard'); };
+if (navAudit) navAudit.onclick = (e) => { e.preventDefault(); showPage('audit'); };
 
 /* ── Spine step indicator ── */
 function stage(name, statusObj) {
   const el = $(`[data-step="${name}"]`);
   if (!el) return;
   const b = el.querySelector('b');
-  
+
   if (typeof statusObj === 'string') {
     el.className = '';
     b.textContent = '--';
@@ -48,7 +71,7 @@ function stage(name, statusObj) {
     }
     return;
   }
-  
+
   if (statusObj?.status === 'success') {
     el.className = 'approved';
     b.textContent = '✓';
@@ -79,7 +102,10 @@ function stage(name, statusObj) {
 }
 
 function renderAuditLog(auditLog) {
-  $('#tx-table-body').innerHTML = auditLog.slice().reverse()
+  const tableBody = $('#tx-table-body');
+  if (!tableBody) return;
+
+  tableBody.innerHTML = auditLog.slice().reverse()
     .map(x => `<tr>
       <td>${new Date(x.executedAt || Date.now()).toLocaleTimeString()}</td>
       <td>${x.actionType || 'N/A'}</td>
@@ -107,37 +133,37 @@ function signOut() {
 }
 
 /* ══════════════════════════════════════════════════
-   TAB SWITCHER  (Sign In / Sign Up)
+   TAB SWITCHER (Sign In / Sign Up)
 ══════════════════════════════════════════════════ */
 document.querySelectorAll('[data-tab]').forEach(btn => {
   btn.onclick = () => {
     mode = btn.dataset.tab;
     document.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    $('#name-wrap').hidden       = mode === 'login';
+    $('#name-wrap').hidden = mode === 'login';
     $('#auth-submit').textContent = mode === 'login' ? 'Sign In' : 'Create Account';
-    $('#auth-error').textContent  = '';
+    $('#auth-error').textContent = '';
   };
 });
 
 /* ══════════════════════════════════════════════════
-   AUTH FORM  (Sign In / Sign Up)
+   AUTH FORM (Sign In / Sign Up)
 ══════════════════════════════════════════════════ */
 $('#auth-form').onsubmit = async (e) => {
-  e.preventDefault();   /* Prevent page reload — CRITICAL */
+  e.preventDefault();
 
   $('#auth-error').textContent = '';
 
   const body = {
-    email:    $('#email').value,
+    email: $('#email').value,
     password: $('#password').value,
   };
   if (mode === 'signup') body.name = $('#name').value;
 
   const r = await fetch(`/api/auth/${mode}`, {
-    method:  'POST',
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify(body),
+    body: JSON.stringify(body),
   });
   const d = await r.json();
 
@@ -146,7 +172,6 @@ $('#auth-form').onsubmit = async (e) => {
     return;
   }
 
-  /* Store session and switch view */
   session = d;
   localStorage.setItem(SESSION_KEY, JSON.stringify(d));
   showView();
@@ -155,7 +180,8 @@ $('#auth-form').onsubmit = async (e) => {
 /* ══════════════════════════════════════════════════
    SIGN OUT BUTTON
 ══════════════════════════════════════════════════ */
-$('#sign-out').onclick = signOut;
+const signOutBtn = $('#sign-out');
+if (signOutBtn) signOutBtn.onclick = signOut;
 
 /* ── Helper: Scroll to latest message ── */
 function scrollToBottom() {
@@ -168,20 +194,23 @@ function scrollToBottom() {
 /* ── Helper: Append Chat Bubble ── */
 function appendBubble(text, sender) {
   const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  $('#chat-messages').innerHTML += `
-    <div class="bubble-group ${sender}">
-      <div class="bubble ${sender}">${text}</div>
-      <div class="bubble-timestamp">${time}</div>
-    </div>
-  `;
-  scrollToBottom();
+  const chatMessages = $('#chat-messages');
+  if (chatMessages) {
+    chatMessages.innerHTML += `
+      <div class="bubble-group ${sender}">
+        <div class="bubble ${sender}">${text}</div>
+        <div class="bubble-timestamp">${time}</div>
+      </div>
+    `;
+    scrollToBottom();
+  }
 }
 
 /* ══════════════════════════════════════════════════
    CHAT FORM
 ══════════════════════════════════════════════════ */
 $('#chat-form').onsubmit = async (e) => {
-  e.preventDefault();   /* Prevent page reload — CRITICAL */
+  e.preventDefault();
 
   const q = $('#query').value;
   if (!q.trim()) return;
@@ -190,9 +219,9 @@ $('#chat-form').onsubmit = async (e) => {
   $('#query').value = '';
 
   const r = await fetch('/api/agent/chat', {
-    method:  'POST',
+    method: 'POST',
     headers: authHeaders(),
-    body:    JSON.stringify({ query: q }),
+    body: JSON.stringify({ query: q }),
   });
   const d = await r.json();
 
@@ -237,7 +266,7 @@ document.querySelectorAll('[data-query]').forEach(btn => {
 });
 
 /* ══════════════════════════════════════════════════
-   BOOTSTRAP  –  validate existing session on load
+   BOOTSTRAP
 ══════════════════════════════════════════════════ */
 if (session) {
   fetch('/api/auth/me', { headers: authHeaders() })

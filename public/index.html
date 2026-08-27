@@ -6,11 +6,449 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Agentic Checkout</title>
   <meta name="description" content="Agentic Checkout — safe autonomous commerce with a full audit spine.">
+
+  <!-- Font Imports: Playfair Display for Hero Heading -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap"
+    rel="stylesheet">
+
   <link rel="stylesheet" href="/style.css">
+  <style>
+    /* Global Border Radius Reset for Pointed Corners */
+    *,
+    *::before,
+    *::after {
+      border-radius: 0 !important;
+    }
+
+    /* Flex Layout to Eliminate Gap Before Footer */
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background-color: #f4f7f2;
+      color: #1a1a1a;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    /* Container Spacing Reset */
+    #auth-view,
+    #dashboard-view {
+      flex: 1 0 auto;
+      width: 100%;
+    }
+
+    /* --- RESTORED ORIGINAL AUTHENTICATION VIEW STYLES --- */
+    .auth-view {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: calc(100vh - 350px);
+      background-color: #0d0f12 !important;
+      padding: 40px 24px;
+      box-sizing: border-box;
+    }
+
+    .auth-card {
+      background-color: #161a22 !important;
+      color: #f1f5f9 !important;
+      border: 1px solid #262c3a !important;
+      padding: 40px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .auth-card h1 {
+      color: #ffffff !important;
+      margin: 10px 0;
+      font-size: 32px;
+      font-weight: 700;
+    }
+
+    .auth-card p {
+      color: #94a3b8 !important;
+      font-size: 16px;
+    }
+
+    .auth-card label {
+      display: block;
+      color: #cbd5e1 !important;
+      font-size: 15px;
+      font-weight: 500;
+      margin-top: 18px;
+    }
+
+    .auth-card input {
+      width: 100%;
+      padding: 12px 16px;
+      margin-top: 6px;
+      font-size: 16px;
+      background-color: #0d0f12 !important;
+      border: 1px solid #262c3a !important;
+      color: #ffffff !important;
+      box-sizing: border-box;
+    }
+
+    .auth-card input::placeholder {
+      color: #64748b !important;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin: 20px 0;
+      border-bottom: 1px solid #262c3a;
+    }
+
+    .tabs button {
+      background: transparent !important;
+      border: none !important;
+      color: #94a3b8 !important;
+      padding: 10px 18px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      border-bottom: 2px solid transparent !important;
+    }
+
+    .tabs button.active {
+      color: #0a5743 !important;
+      border-bottom-color: #0a5743 !important;
+    }
+
+    #auth-submit {
+      width: 100%;
+      margin-top: 24px;
+      padding: 14px;
+      font-size: 17px;
+      background-color: #0a5743 !important;
+      color: #ffffff !important;
+      border: none !important;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .demo-hint {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #64748b !important;
+      text-align: center;
+    }
+
+    /* --- HERO HEADING ENHANCEMENTS --- */
+    .hero {
+      margin-bottom: 32px;
+    }
+
+    .hero h1 {
+      font-family: 'Playfair Display', Georgia, serif !important;
+      font-size: 54px !important;
+      font-weight: 800 !important;
+      line-height: 1.15 !important;
+      letter-spacing: -0.5px !important;
+      color: #0d0f12 !important;
+      margin-top: 8px !important;
+      margin-bottom: 0 !important;
+    }
+
+    .hero h1 em {
+      font-style: italic !important;
+      font-weight: 700 !important;
+      color: #0a5743 !important;
+    }
+
+    /* --- DASHBOARD PANELS & CARDS (WHITE) --- */
+    .panel,
+    .workspace article,
+    table,
+    th,
+    td,
+    .spine li {
+      background-color: #ffffff !important;
+      color: #1a1a1a !important;
+      border-color: #e2e8f0 !important;
+      font-size: 16px;
+    }
+
+    .panel h2 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .eyebrow {
+      color: #0a5743 !important;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 1.2px;
+    }
+
+    .composer input {
+      background-color: #ffffff !important;
+      color: #1a1a1a !important;
+      border: 1px solid #e2e8f0 !important;
+      font-size: 16px;
+      padding: 12px 16px;
+    }
+
+    .composer button,
+    .quick-actions button {
+      background-color: #ffffff !important;
+      color: #1a1a1a !important;
+      border: 1px solid #cbd5e1 !important;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 10px 18px;
+      cursor: pointer;
+    }
+
+    /* Chat Messages Layout & Bubbles */
+    .chat,
+    #chat-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 14px;
+      background-color: #ffffff !important;
+    }
+
+    .bubble-group {
+      display: flex;
+      flex-direction: column;
+      max-width: 85%;
+    }
+
+    .bubble-group.user {
+      align-self: flex-end;
+      align-items: flex-end;
+    }
+
+    .bubble-group.agent {
+      align-self: flex-start;
+      align-items: flex-start;
+    }
+
+    .bubble {
+      padding: 12px 16px;
+      font-size: 16px;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .bubble.user {
+      background-color: #0a5743 !important;
+      color: #ffffff !important;
+    }
+
+    .bubble.agent {
+      background-color: #f8fafc !important;
+      color: #1a1a1a !important;
+      border: 1px solid #e2e8f0;
+    }
+
+    .bubble-timestamp {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 3px;
+    }
+
+    /* Transaction Table Font Sizing */
+    table th {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      padding: 14px 18px;
+    }
+
+    table td {
+      font-size: 16px;
+      padding: 14px 18px;
+    }
+
+    /* Spine Inspector Items */
+    .spine li {
+      font-size: 16px;
+      padding: 12px 16px;
+    }
+
+    /* --- NAVBAR STYLES (#0a5743) --- */
+    header.navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #0a5743 !important;
+      padding: 16px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      color: #ffffff !important;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .brand-logo {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff !important;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .nav-links a {
+      color: #f1f5f9 !important;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: #ffffff !important;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .nav-user-badge {
+      font-size: 15px;
+      font-weight: 500;
+      color: #ffffff !important;
+      background: rgba(255, 255, 255, 0.18) !important;
+      padding: 8px 14px;
+    }
+
+    /* --- FOOTER STYLES (#0a5743) --- */
+    footer.site-footer {
+      flex-shrink: 0;
+      background: #0a5743 !important;
+      color: #f1f5f9 !important;
+      padding: 48px 32px 24px;
+      margin-top: 0;
+      font-size: 14px;
+    }
+
+    .footer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+      margin-bottom: 32px;
+    }
+
+    .footer-brand {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ffffff !important;
+    }
+
+    .footer-tagline {
+      color: #e2e8f0 !important;
+      font-size: 16px;
+    }
+
+    .lang-selector select {
+      background: rgba(255, 255, 255, 0.18) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(255, 255, 255, 0.35) !important;
+      padding: 8px 14px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+      margin-bottom: 40px;
+    }
+
+    .footer-col h4 {
+      color: #ffffff !important;
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 16px;
+    }
+
+    .footer-col ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .footer-col ul li {
+      margin-bottom: 10px;
+    }
+
+    .footer-col ul li a {
+      color: #f1f5f9 !important;
+      text-decoration: none;
+      font-size: 15px;
+      transition: color 0.2s;
+    }
+
+    .footer-col ul li a:hover {
+      color: #ffffff !important;
+    }
+
+    .badge-hiring {
+      background: #ffffff !important;
+      color: #0a5743 !important;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 6px;
+      margin-left: 6px;
+    }
+
+    .footer-bottom {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr;
+      gap: 32px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.25);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .legal-copy {
+      color: #e2e8f0 !important;
+    }
+  </style>
 </head>
 
 <body>
 
+  <!-- SIGN IN / SIGN UP VIEW -->
   <section id="auth-view" class="auth-view">
     <div class="auth-card">
       <p class="eyebrow">AGENTIC CHECKOUT</p>
@@ -40,22 +478,32 @@
     </div>
   </section>
 
+  <!-- DASHBOARD / MAIN CONTAINER -->
   <section id="dashboard-view" style="display:none">
-    <header class="topbar">
-      <a class="brand" href="#">
-        <span class="brand-mark">A</span>Agentic<span>Checkout</span>
-      </a>
-      <div class="topbar-user">
-        <span id="user-greeting"></span>
-        <button id="sign-out" type="button">Sign Out</button>
+    <header class="navbar">
+      <div class="nav-left">
+        <a href="#" class="brand-logo">⚡ Agentic Commerce</a>
+        <ul class="nav-links">
+          <li><a href="#" id="nav-dashboard">Dashboard</a></li>
+          <li><a href="#" id="nav-audit">Audit Logs</a></li>
+        </ul>
+      </div>
+      <div class="nav-right">
+        <span id="user-greeting" class="nav-user-badge">Logged in as: Demo User</span>
+        <button id="sign-out"
+          style="background:#ff4d4f !important; color:#fff !important; border:none; padding:10px 18px; font-size:15px; cursor:pointer; font-weight:600;">Sign
+          Out</button>
       </div>
     </header>
-    <main>
+
+    <!-- DASHBOARD MAIN WORKSPACE VIEW -->
+    <main id="main-dashboard-content">
       <section class="hero">
         <p class="eyebrow">SAFE AUTONOMY</p>
         <h1>Checkout, with reasoning<br><em>left visible.</em></h1>
       </section>
-      <section class="workspace">
+
+      <section class="workspace" style="grid-template-columns: 1fr 1fr;">
         <article class="panel">
           <h2>Conversation</h2>
           <div id="chat-messages" class="chat"></div>
@@ -69,6 +517,7 @@
             <button type="submit">Send</button>
           </form>
         </article>
+
         <article class="panel">
           <h2>Spine inspector</h2>
           <ol id="spine-container" class="spine">
@@ -80,23 +529,127 @@
           </ol>
           <p id="reasoning" class="reasoning">Ready.</p>
         </article>
-        <article class="panel">
-          <h2>Your transactions</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>TIME</th>
-                <th>ACTION</th>
-                <th>GATE</th>
-                <th>RESULT</th>
-              </tr>
-            </thead>
-            <tbody id="tx-table-body"></tbody>
-          </table>
-        </article>
       </section>
     </main>
+
+    <!-- DEDICATED AUDIT LOGS PAGE VIEW -->
+    <main id="audit-page-view" style="display:none;">
+      <section class="hero">
+        <p class="eyebrow">TRANSACTION HISTORY</p>
+        <h1>Audit Logs & Commerce Executions</h1>
+      </section>
+
+      <article class="panel" style="width: 100%;">
+        <h2>Your transactions</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>TIME</th>
+              <th>ACTION</th>
+              <th>GATE</th>
+              <th>RESULT</th>
+            </tr>
+          </thead>
+          <tbody id="tx-table-body"></tbody>
+        </table>
+      </article>
+    </main>
   </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-top">
+      <div class="footer-brand">Checkout.com</div>
+      <div class="footer-tagline">Where the world checks out</div>
+      <div class="lang-selector">
+        <select>
+          <option>🇬🇧 Global (English)</option>
+          <option>🇮🇳 India (English)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Products</h4>
+        <ul>
+          <li><a href="#">Accept Online</a></li>
+          <li><a href="#">Flow</a></li>
+          <li><a href="#">Payouts</a></li>
+          <li><a href="#">Issuing</a></li>
+          <li><a href="#">Payment Integrations</a></li>
+          <li><a href="#">Payment Methods</a></li>
+          <li><a href="#">Fraud Detection</a></li>
+          <li><a href="#">Authentication</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Solutions</h4>
+        <ul>
+          <li><a href="#">Ecommerce</a></li>
+          <li><a href="#">Fintech</a></li>
+          <li><a href="#">Gaming</a></li>
+          <li><a href="#">Crypto</a></li>
+          <li><a href="#">Marketplace</a></li>
+          <li><a href="#">Travel</a></li>
+          <li><a href="#">International Coverage</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">Our mission</a></li>
+          <li><a href="#">Our customers</a></li>
+          <li><a href="#">Leadership</a></li>
+          <li><a href="#">Contact us</a></li>
+          <li><a href="#">Careers <span class="badge-hiring">HIRING</span></a></li>
+          <li><a href="#">Early Careers #NextGen</a></li>
+          <li><a href="#">Life at Checkout</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Documentation & Resources</h4>
+        <ul>
+          <li><a href="#">For developers</a></li>
+          <li><a href="#">API reference</a></li>
+          <li><a href="#">Test account</a></li>
+          <li><a href="#">Trust center</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Case studies</a></li>
+          <li><a href="#">Support</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="legal-copy">
+        <p><strong>© 2026 Checkout.com</strong></p>
+        <p style="margin-top: 8px;">
+          Checkout.com or its affiliates provide services under a license or registration in various jurisdictions.
+          Money transmission services in the U.S. provided by Checkout US Inc. (NMLS # 1791692). For details please
+          visit our Regulatory page.
+        </p>
+      </div>
+
+      <div>
+        <p><a href="#" style="color:#f1f5f9 !important; text-decoration:none;">Terms & policies</a></p>
+        <p><a href="#" style="color:#f1f5f9 !important; text-decoration:none;">Service terms</a></p>
+        <p><a href="#" style="color:#f1f5f9 !important; text-decoration:none;">Country terms</a></p>
+        <p><a href="#" style="color:#f1f5f9 !important; text-decoration:none;">Privacy notice</a></p>
+        <p><a href="#" style="color:#f1f5f9 !important; text-decoration:none;">Regulatory</a></p>
+        <p><a href="#" style="color:#f1f5f9 !important; text-decoration:none;">Cookies Settings</a></p>
+      </div>
+
+      <div>
+        <p><a href="#" style="color:#f1f5f9 !important; text-decoration:none;">Modern slavery statement</a></p>
+        <p><a href="#" style="color:#f1f5f9 !important; text-decoration:none;">Supplier code of conduct</a></p>
+        <p><a href="#" style="color:#f1f5f9 !important; text-decoration:none;">Accessibility statement</a></p>
+      </div>
+    </div>
+  </footer>
 
   <script src="/app.js"></script>
 </body>
