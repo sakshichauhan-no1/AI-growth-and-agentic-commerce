@@ -1361,5 +1361,39 @@
       "fallbackFrom": "razorpay",
       "fallbackReason": "Razorpay request failed."
     }
+  },
+  {
+    "actionId": "action_1788203864721_6ac569",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-31T19:17:44.756Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-31T19:17:44.721Z"
+    },
+    "status": "executed",
+    "order": {
+      "amount": 129900,
+      "amount_due": 129900,
+      "amount_paid": 0,
+      "attempts": 0,
+      "created_at": 1788203865,
+      "currency": "INR",
+      "entity": "order",
+      "id": "order_TWUP3otmlyFYVs",
+      "notes": {
+        "actionId": "action_1788203864721_6ac569",
+        "productId": "sku_mouse"
+      },
+      "offer_id": null,
+      "receipt": "action_1788203864721_6ac569",
+      "status": "created"
+    }
   }
 ]

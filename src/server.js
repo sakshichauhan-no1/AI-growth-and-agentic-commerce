@@ -1,6 +1,9 @@
 'use strict';
+require('dotenv').config({ quiet: true });
 const express=require('express'); const {randomUUID,createHmac,timingSafeEqual}=require('node:crypto'); const {existsSync,readFileSync,writeFileSync}=require('node:fs'); const {join,resolve}=require('node:path');
+const Razorpay = require('razorpay');
 const {createRazorpayClient}=require('./api/razorpayClient');
+const {createPaymentRouter}=require('./api/paymentRoutes');
 const {proposeAction,explain,gate,execute,readAuditLog,audit: writeAudit}=require('./agent/spine');
 
 const rawCatalog = [
@@ -121,4 +124,23 @@ app.post('/api/agent/chat',async(req,res)=>{
     return res.json({success,agentResponse,spine,auditLog:readAuditLog().filter(x=>x.userId===user.id)});
   }catch(e){return res.status(400).json({error:e.message});}
 });
-app.get('/api/audit',(req,res)=>{const user=tokenUser(req);if(!user)return res.status(401).json({error:'Please sign in to view audit history.'});return res.json(readAuditLog().filter(x=>x.userId===user.id));}); app.use((_q,res)=>res.sendFile(join(__dirname,'..','public','index.html'))); if(require.main===module)app.listen(PORT,()=>console.log(`Agentic Commerce UI listening on http://localhost:${PORT}`)); module.exports={app,users,tokenFor};
+app.get('/api/audit',(req,res)=>{const user=tokenUser(req);if(!user)return res.status(401).json({error:'Please sign in to view audit history.'});return res.json(readAuditLog().filter(x=>x.userId===user.id));});
+
+// ─── Razorpay Payment Routes ────────────────────────────────────────────────
+// Mounted at /api/payment — exposes POST /api/payment/order & /api/payment/verify
+// Requires MOCK_MODE=false and valid KEY_ID / KEY_SECRET in .env for live payments.
+// In mock/test mode the SDK will still initialise; checkout.js test cards work fine.
+const _rzpKeyId = process.env.RAZORPAY_KEY_ID;
+const _rzpKeySecret = process.env.RAZORPAY_KEY_SECRET;
+if (_rzpKeyId && _rzpKeySecret) {
+  const _rzpSdk = new Razorpay({ key_id: _rzpKeyId, key_secret: _rzpKeySecret });
+  app.use('/api/payment', createPaymentRouter(tokenUser, _rzpSdk, _rzpKeySecret));
+} else {
+  // Keys not set — stub the payment routes so the app still starts cleanly
+  app.use('/api/payment', (_req, res) =>
+    res.status(503).json({ error: 'Razorpay keys are not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in .env.' })
+  );
+  console.warn('[server] RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET not set — payment routes disabled.');
+}
+
+app.use((_q,res)=>res.sendFile(join(__dirname,'..','public','index.html'))); if(require.main===module)app.listen(PORT,()=>console.log(`Agentic Commerce UI listening on http://localhost:${PORT}`)); module.exports={app,users,tokenFor};
