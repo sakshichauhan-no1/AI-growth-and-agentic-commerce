@@ -30,9 +30,13 @@ const OrderSchema = z.object({
 });
 
 const VerifySchema = z.object({
-  razorpay_order_id: z.string().min(1, 'razorpay_order_id is required.'),
+  razorpay_order_id:  z.string().min(1, 'razorpay_order_id is required.'),
   razorpay_payment_id: z.string().min(1, 'razorpay_payment_id is required.'),
-  razorpay_signature: z.string().min(1, 'razorpay_signature is required.'),
+  razorpay_signature:  z.string().min(1, 'razorpay_signature is required.'),
+  // Optional context passed from the chat flow for audit enrichment
+  itemName:    z.string().optional(),
+  itemPrice:   z.string().optional(),
+  amountPaise: z.number().int().positive().optional(),
 });
 
 // ─── Route factory ─────────────────────────────────────────────────────────────
@@ -160,10 +164,14 @@ function createPaymentRouter(tokenUser, razorpay, keySecret) {
     );
 
     return res.json({
-      success: true,
-      message: 'Payment verified successfully.',
-      orderId: razorpay_order_id,
-      paymentId: razorpay_payment_id,
+      success:    true,
+      message:    'Payment verified successfully.',
+      orderId:    razorpay_order_id,
+      paymentId:  razorpay_payment_id,
+      // Echo back metadata so the frontend can build a rich audit row
+      itemName:   parsed.data.itemName   ?? null,
+      itemPrice:  parsed.data.itemPrice  ?? null,
+      amountPaise: parsed.data.amountPaise ?? null,
     });
   });
 

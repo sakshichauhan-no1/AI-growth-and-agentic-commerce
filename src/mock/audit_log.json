@@ -1395,5 +1395,280 @@
       "receipt": "action_1788203864721_6ac569",
       "status": "created"
     }
+  },
+  {
+    "actionId": "action_1788205002117_31a5c7",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-31T19:36:42.119Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-31T19:36:42.117Z"
+    },
+    "status": "executed",
+    "order": {
+      "amount": 129900,
+      "amount_due": 129900,
+      "amount_paid": 0,
+      "attempts": 0,
+      "created_at": 1788205002,
+      "currency": "INR",
+      "entity": "order",
+      "id": "order_TWUj5FvO7uKmJF",
+      "notes": {
+        "actionId": "action_1788205002117_31a5c7",
+        "productId": "sku_mouse"
+      },
+      "offer_id": null,
+      "receipt": "action_1788205002117_31a5c7",
+      "status": "created"
+    }
+  },
+  {
+    "actionId": "action_1788205535378_43c2f4",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-31T19:45:35.382Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-31T19:45:35.378Z"
+    },
+    "status": "executed",
+    "order": {
+      "amount": 129900,
+      "amount_due": 129900,
+      "amount_paid": 0,
+      "attempts": 0,
+      "created_at": 1788205535,
+      "currency": "INR",
+      "entity": "order",
+      "id": "order_TWUsTLCBFBr2oT",
+      "notes": {
+        "actionId": "action_1788205535378_43c2f4",
+        "productId": "sku_mouse"
+      },
+      "offer_id": null,
+      "receipt": "action_1788205535378_43c2f4",
+      "status": "created"
+    }
+  },
+  {
+    "actionId": "action_1788205854972_cafff0",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-31T19:50:55.718Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-31T19:50:54.973Z"
+    },
+    "status": "pending-checkout",
+    "itemName": "Wireless Mouse",
+    "itemPrice": "₹1,299",
+    "amountPaise": 129900,
+    "order": {
+      "id": "order_TWUy6VGV4RnYsO"
+    }
+  },
+  {
+    "actionId": "action_1788205997322_dd3d2e",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-31T19:53:17.786Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-31T19:53:17.322Z"
+    },
+    "status": "pending-checkout",
+    "itemName": "Wireless Mouse",
+    "itemPrice": "₹1,299",
+    "amountPaise": 129900,
+    "order": {
+      "id": "order_TWV0bbhS8xTLoE"
+    }
+  },
+  {
+    "actionId": "action_1788206677920_2285e4",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-31T20:04:38.333Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-31T20:04:37.920Z"
+    },
+    "status": "pending-checkout",
+    "itemName": "Wireless Mouse",
+    "itemPrice": "₹1,299",
+    "amountPaise": 129900,
+    "order": {
+      "id": "order_TWVCaSp1NUvz4r"
+    }
+  },
+  {
+    "actionId": "action_1788206831633_ea5950",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-31T20:07:12.043Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-31T20:07:11.633Z"
+    },
+    "status": "pending-checkout",
+    "itemName": "Wireless Mouse",
+    "itemPrice": "₹1,299",
+    "amountPaise": 129900,
+    "order": {
+      "id": "order_TWVFIFYBbcyykF"
+    }
+  },
+  {
+    "actionId": "action_1788207298873_3feeeb",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-31T20:14:59.307Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-31T20:14:58.873Z"
+    },
+    "status": "pending-checkout",
+    "itemName": "Wireless Mouse",
+    "itemPrice": "₹1,299",
+    "amountPaise": 129900,
+    "order": {
+      "id": "order_TWVNWI12TYS6BL"
+    }
+  },
+  {
+    "actionId": "action_1788209632251_89c356",
+    "actionType": "UPSELL",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-31T20:53:52.761Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-31T20:53:52.251Z"
+    },
+    "status": "pending-checkout",
+    "itemName": "Extended Warranty",
+    "itemPrice": "₹499",
+    "amountPaise": 49900,
+    "order": {
+      "id": "order_TWW2bMSNiXxDGE"
+    }
+  },
+  {
+    "actionId": "action_1788210335324_8432a8",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-31T21:05:35.787Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-31T21:05:35.324Z"
+    },
+    "status": "pending-checkout",
+    "itemName": "Wireless Mouse",
+    "itemPrice": "₹1,299",
+    "amountPaise": 129900,
+    "order": {
+      "id": "order_TWWEyl7YSfz7ir"
+    }
+  },
+  {
+    "actionId": "action_1788210832088_fa7025",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-31T21:13:52.551Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-31T21:13:52.088Z"
+    },
+    "status": "pending-checkout",
+    "itemName": "Wireless Mouse",
+    "itemPrice": "₹1,299",
+    "amountPaise": 129900,
+    "order": {
+      "id": "order_TWWNj026pVznBq"
+    }
+  },
+  {
+    "actionId": "action_1788210899133_03c840",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-08-31T21:14:59.653Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-08-31T21:14:59.133Z"
+    },
+    "status": "pending-checkout",
+    "itemName": "Wireless Mouse",
+    "itemPrice": "₹1,299",
+    "amountPaise": 129900,
+    "order": {
+      "id": "order_TWWOuF0BJ2qPwx"
+    }
   }
 ]

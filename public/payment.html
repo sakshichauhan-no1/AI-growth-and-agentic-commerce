@@ -18,24 +18,30 @@
   <style>
     /* ─── Design Tokens ──────────────────────────────────────────────────────── */
     :root {
-      --brand:        #0a5743;
-      --brand-dark:   #07402f;
-      --brand-light:  #e8f5f0;
-      --accent:       #10b981;
-      --danger:       #ef4444;
-      --danger-bg:    #fef2f2;
-      --warning:      #f59e0b;
+      --brand: #0a5743;
+      --brand-dark: #07402f;
+      --brand-light: #e8f5f0;
+      --accent: #10b981;
+      --danger: #ef4444;
+      --danger-bg: #fef2f2;
+      --warning: #f59e0b;
       --text-primary: #0f172a;
-      --text-muted:   #64748b;
-      --surface:      #ffffff;
-      --bg:           #f0f4f8;
-      --border:       #e2e8f0;
-      --radius:       12px;
-      --shadow-card:  0 4px 24px rgba(10,87,67,0.10), 0 1px 4px rgba(10,87,67,0.06);
+      --text-muted: #64748b;
+      --surface: #ffffff;
+      --bg: #f0f4f8;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow-card: 0 4px 24px rgba(10, 87, 67, 0.10), 0 1px 4px rgba(10, 87, 67, 0.06);
     }
 
     /* ─── Reset & Base ───────────────────────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       font-family: 'Inter', system-ui, sans-serif;
@@ -84,7 +90,7 @@
       position: absolute;
       top: 28px;
       right: 28px;
-      background: rgba(255,255,255,0.18);
+      background: rgba(255, 255, 255, 0.18);
       border-radius: 50%;
       width: 40px;
       height: 40px;
@@ -153,7 +159,7 @@
 
     .field input:focus {
       border-color: var(--brand);
-      box-shadow: 0 0 0 3px rgba(10,87,67,0.12);
+      box-shadow: 0 0 0 3px rgba(10, 87, 67, 0.12);
     }
 
     /* Pay button */
@@ -176,21 +182,35 @@
       letter-spacing: 0.2px;
     }
 
-    #pay-btn:hover:not(:disabled) { opacity: 0.92; transform: translateY(-1px); }
-    #pay-btn:active:not(:disabled) { transform: translateY(0); }
-    #pay-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    #pay-btn:hover:not(:disabled) {
+      opacity: 0.92;
+      transform: translateY(-1px);
+    }
+
+    #pay-btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    #pay-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
 
     .btn-spinner {
       display: none;
       width: 18px;
       height: 18px;
-      border: 2.5px solid rgba(255,255,255,0.4);
+      border: 2.5px solid rgba(255, 255, 255, 0.4);
       border-top-color: #fff;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     /* Status banner */
     #status-banner {
@@ -205,8 +225,15 @@
     }
 
     @keyframes fadeSlide {
-      from { opacity: 0; transform: translateY(6px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     #status-banner.success {
@@ -236,8 +263,16 @@
       color: #047857;
     }
 
-    .detail-row .key { opacity: 0.75; }
-    .detail-row .val { font-weight: 600; word-break: break-all; text-align: right; max-width: 60%; }
+    .detail-row .key {
+      opacity: 0.75;
+    }
+
+    .detail-row .val {
+      font-weight: 600;
+      word-break: break-all;
+      text-align: right;
+      max-width: 60%;
+    }
 
     /* Trust badges */
     .trust-row {
@@ -260,8 +295,13 @@
 
     /* Responsive */
     @media (max-width: 480px) {
-      .pay-header { padding: 22px 20px 18px; }
-      .pay-body   { padding: 20px; }
+      .pay-header {
+        padding: 22px 20px 18px;
+      }
+
+      .pay-body {
+        padding: 20px;
+      }
     }
   </style>
 </head>
@@ -297,7 +337,8 @@
         </div>
         <div class="field">
           <label for="pf-contact">Mobile number</label>
-          <input id="pf-contact" type="tel" placeholder="9876543210" autocomplete="tel" maxlength="10">
+          <input id="pf-contact" type="tel" value="+919999999999" placeholder="+919999999999" autocomplete="tel"
+            maxlength="15">
         </div>
       </div>
 
@@ -345,7 +386,7 @@
     // amount must already be in paise.
     const params = new URLSearchParams(window.location.search);
     const AMOUNT_PAISE = parseInt(params.get('amount') || '129900', 10); // default ₹1,299
-    const DESCRIPTION  = params.get('description') || 'Agentic Commerce Purchase';
+    const DESCRIPTION = params.get('description') || 'Agentic Commerce Purchase';
 
     // ─── Display amount ─────────────────────────────────────────────────────────
     document.getElementById('display-amount').textContent =
@@ -353,11 +394,11 @@
         .format(AMOUNT_PAISE / 100);
 
     // ─── Helpers ────────────────────────────────────────────────────────────────
-    const payBtn      = document.getElementById('pay-btn');
-    const btnLabel    = document.getElementById('btn-label');
-    const btnIcon     = document.getElementById('btn-icon');
-    const btnSpinner  = document.getElementById('btn-spinner');
-    const statusEl    = document.getElementById('status-banner');
+    const payBtn = document.getElementById('pay-btn');
+    const btnLabel = document.getElementById('btn-label');
+    const btnIcon = document.getElementById('btn-icon');
+    const btnSpinner = document.getElementById('btn-spinner');
+    const statusEl = document.getElementById('status-banner');
 
     /**
      * Reads the auth token stored by app.js login flow.
@@ -408,12 +449,12 @@
     async function handlePay() {
       clearStatus();
 
-      const name    = document.getElementById('pf-name').value.trim();
-      const email   = document.getElementById('pf-email').value.trim();
+      const name = document.getElementById('pf-name').value.trim();
+      const email = document.getElementById('pf-email').value.trim();
       const contact = document.getElementById('pf-contact').value.trim();
 
       // Basic client-side validation (Razorpay also validates)
-      if (!name)  return showStatus('error', '<span class="status-icon">⚠️</span> Please enter your full name.');
+      if (!name) return showStatus('error', '<span class="status-icon">⚠️</span> Please enter your full name.');
       if (!email || !email.includes('@'))
         return showStatus('error', '<span class="status-icon">⚠️</span> Please enter a valid email address.');
 
@@ -435,9 +476,9 @@
           );
         }
 
-        orderId        = data.orderId;
+        orderId = data.orderId;
         amountFromServer = data.amount;   // use server amount — never trust client
-        currency       = data.currency;
+        currency = data.currency;
       } catch (err) {
         setLoading(false);
         return showStatus('error',
@@ -458,6 +499,10 @@
         order_id: orderId,
 
         prefill: { name, email, contact },
+        readonly: {
+          contact: true,
+          email: true
+        },
 
         theme: { color: '#0a5743' },
 
@@ -539,7 +584,7 @@
         const userJson = localStorage.getItem('user');
         if (userJson) {
           const user = JSON.parse(userJson);
-          if (user.name)  document.getElementById('pf-name').value  = user.name;
+          if (user.name) document.getElementById('pf-name').value = user.name;
           if (user.email) document.getElementById('pf-email').value = user.email;
         }
       } catch (_) { /* ignore */ }
