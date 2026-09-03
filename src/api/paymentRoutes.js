@@ -6,6 +6,7 @@
  * Exposes:
  *   POST /api/payment/order   — create a Razorpay order (amount in paise)
  *   POST /api/payment/verify  — verify HMAC-SHA256 payment signature
+ *   POST /api/payment/outcome — record a failed or cancelled checkout
  *
  * Both routes require a valid session token (Bearer <token> header).
  * Signature verification uses Node's native `crypto` with timingSafeEqual
@@ -13,7 +14,13 @@
  */
 
 const { createHmac, timingSafeEqual } = require('node:crypto');
+const { existsSync, readFileSync, writeFileSync } = require('node:fs');
+const { resolve } = require('node:path');
 const { Router } = require('express');
+
+// Path to the shared audit log written by spine.js.
+// __dirname is src/api, so ../../mock resolves to src/mock.
+const AUDIT_LOG_PATH = resolve(__dirname, '..', 'mock', 'audit_log.json');
 
 // ─── Input validation with Zod ────────────────────────────────────────────────
 const { z } = require('zod');
@@ -38,6 +45,147 @@ const VerifySchema = z.object({
   itemPrice:   z.string().optional(),
   amountPaise: z.number().int().positive().optional(),
 });
+
+const OutcomeSchema = z.object({
+  orderId: z.string().min(1),
+  status: z.enum(['failed', 'cancelled']),
+  error: z.string().max(500).optional(),
+});
+
+// ─── Audit log sync helper ────────────────────────────────────────────────────
+
+/**
+ * Locate a 'pending-checkout' audit entry whose order.id matches the given
+ * Razorpay order ID and promote its status to 'paid'.
+ *
+ * This is a best-effort operation: if no matching entry is found (e.g. the
+ * server was restarted between checkout and payment), we log a warning and
+ * return false without throwing — the payment itself is already verified.
+ *
+ * @param {string} orderId    - razorpay_order_id from the verify payload
+ * @param {string} paymentId  - razorpay_payment_id to stamp on the entry
+ * @returns {boolean}         - true if an entry was updated, false otherwise
+ */
+function updateAuditEntryStatus(orderId, paymentId, status = 'paid', error = null, userId = null) {
+  try {
+    if (!existsSync(AUDIT_LOG_PATH)) return false;
+
+    const raw     = readFileSync(AUDIT_LOG_PATH, 'utf8').trim();
+    const entries = raw ? JSON.parse(raw) : [];
+
+    // Find the first pending-checkout entry whose order matches this payment.
+    // We guard against entries that have no `order` field (older mock records).
+    const idx = entries.findIndex(
+      (e) =>
+        (e.order?.id === orderId || e.orderId === orderId) &&
+        (!userId || e.userId === userId) &&
+        (status === 'paid'
+          ? (e.status === 'pending-checkout' || e.status === 'executed' || (e.status === 'paid' && e.paymentId === paymentId))
+          : (!e.status || e.status.toLowerCase().includes('pending') || e.status === 'executed')),
+    );
+
+    if (idx === -1) return false;
+
+    // Mutate in-place — preserves all other fields (cart items, gate, etc.)
+    entries[idx] = {
+      ...entries[idx],
+      status,
+      ...(status === 'paid' ? { paidAt: new Date().toISOString(), paymentId } : { [status === 'cancelled' ? 'cancelledAt' : 'failedAt']: new Date().toISOString() }),
+      ...(error ? { error } : {}),
+    };
+
+    if (status === 'paid') resolveEarlierAttempts(entries, entries[idx], userId);
+
+    writeFileSync(AUDIT_LOG_PATH, `${JSON.stringify(entries, null, 2)}\n`, 'utf8');
+    return true;
+  } catch (err) {
+    // Never let an audit-sync failure surface as a 500 to the client.
+    console.error('[payment/verify] Failed to sync audit log entry:', err.message);
+    return false;
+  }
+}
+
+function sameCart(a, b) {
+  if (!a?.cartItems?.length || !b?.cartItems?.length) return false;
+  const normalize = (entry) => entry.cartItems
+    .map((item) => `${item.productId || item.name}:${item.quantity || 1}`)
+    .sort()
+    .join('|');
+  return normalize(a) === normalize(b);
+}
+
+function resolveEarlierAttempts(entries, successfulEntry, userId) {
+  for (const entry of entries) {
+    if (entry === successfulEntry || entry.userId !== userId || !['failed', 'cancelled'].includes(entry.status)) continue;
+    const sameAmount = Number(entry.amountPaise) === Number(successfulEntry.amountPaise);
+    if (sameAmount && (sameCart(entry, successfulEntry) || !entry.cartItems?.length || !successfulEntry.cartItems?.length)) {
+      entry.retryResolved = true;
+      entry.resolvedByOrderId = successfulEntry.order?.id || successfulEntry.orderId || null;
+      entry.resolvedAt = new Date().toISOString();
+    }
+  }
+}
+
+function appendFallbackPaidAudit({ user, orderId, paymentId, itemName, amountPaise }) {
+  try {
+    const raw = existsSync(AUDIT_LOG_PATH) ? readFileSync(AUDIT_LOG_PATH, 'utf8').trim() : '';
+    const entries = raw ? JSON.parse(raw) : [];
+    const source = entries.find((entry) =>
+      entry.userId === user.id && (entry.order?.id === orderId || entry.orderId === orderId),
+    );
+    const successfulEntry = {
+      actionId: `payment_${Date.now()}`,
+      actionType: 'CART_CHECKOUT',
+      userId: user.id,
+      user: { id: user.id, name: user.name, email: user.email },
+      executedAt: new Date().toISOString(),
+      status: 'paid',
+      itemName: itemName || source?.itemName || 'Purchase',
+      amountPaise: amountPaise || source?.amountPaise || 0,
+      cartItems: source?.cartItems || [{ name: itemName || source?.itemName || 'Purchase', quantity: 1, totalPaise: amountPaise || source?.amountPaise || 0 }],
+      order: { id: orderId },
+      paidAt: new Date().toISOString(),
+      paymentId,
+    };
+    entries.push(successfulEntry);
+    resolveEarlierAttempts(entries, successfulEntry, user.id);
+    writeFileSync(AUDIT_LOG_PATH, `${JSON.stringify(entries, null, 2)}\n`, 'utf8');
+    return true;
+  } catch (err) {
+    console.error('[payment/verify] Failed to append fallback paid audit entry:', err.message);
+    return false;
+  }
+}
+
+function appendFallbackOutcomeAudit({ user, orderId, status, error }) {
+  try {
+    const raw = existsSync(AUDIT_LOG_PATH) ? readFileSync(AUDIT_LOG_PATH, 'utf8').trim() : '';
+    const entries = raw ? JSON.parse(raw) : [];
+    const source = entries.find((entry) =>
+      entry.userId === user.id && (entry.order?.id === orderId || entry.orderId === orderId),
+    );
+    const timestamp = new Date().toISOString();
+    entries.push({
+      actionId: `payment_attempt_${Date.now()}`,
+      actionType: 'CART_CHECKOUT',
+      userId: user.id,
+      user: { id: user.id, name: user.name, email: user.email },
+      executedAt: timestamp,
+      status,
+      cartItems: source?.cartItems || [],
+      amountPaise: source?.amountPaise || 0,
+      order: { id: orderId },
+      [status === 'cancelled' ? 'cancelledAt' : 'failedAt']: timestamp,
+      ...(error ? { error } : {}),
+      ...(source?.status === 'paid' ? { retryResolved: true, resolvedByOrderId: orderId, resolvedAt: timestamp } : {}),
+    });
+    writeFileSync(AUDIT_LOG_PATH, `${JSON.stringify(entries, null, 2)}\n`, 'utf8');
+    return true;
+  } catch (err) {
+    console.error('[payment/outcome] Failed to append fallback outcome audit entry:', err.message);
+    return false;
+  }
+}
 
 // ─── Route factory ─────────────────────────────────────────────────────────────
 
@@ -157,22 +305,46 @@ function createPaymentRouter(tokenUser, razorpay, keySecret) {
       });
     }
 
-    // 4. Signature is valid — safe to fulfil the order
-    console.info(
-      '[payment/verify] Payment verified successfully.',
-      { orderId: razorpay_order_id, paymentId: razorpay_payment_id, userId: req.currentUser.id }
-    );
+    // 4. Signature is valid — sync the audit log entry, then respond
+    let auditUpdated = updateAuditEntryStatus(razorpay_order_id, razorpay_payment_id, 'paid', null, req.currentUser.id);
+    if (!auditUpdated) {
+      // A successful payment must remain visible even if the browser/server lost
+      // the pending record or Razorpay reused an order after an earlier attempt.
+      auditUpdated = appendFallbackPaidAudit({
+        user: req.currentUser,
+        orderId: razorpay_order_id,
+        paymentId: razorpay_payment_id,
+        itemName: parsed.data.itemName,
+        amountPaise: parsed.data.amountPaise,
+      });
+    } else {
+      console.info(
+        '[payment/verify] Audit entry promoted to \'paid\'.',
+        { orderId: razorpay_order_id, paymentId: razorpay_payment_id, userId: req.currentUser.id },
+      );
+    }
 
     return res.json({
-      success:    true,
-      message:    'Payment verified successfully.',
-      orderId:    razorpay_order_id,
-      paymentId:  razorpay_payment_id,
+      success:     true,
+      message:     'Payment verified successfully.',
+      orderId:     razorpay_order_id,
+      paymentId:   razorpay_payment_id,
+      auditSynced: auditUpdated,
       // Echo back metadata so the frontend can build a rich audit row
-      itemName:   parsed.data.itemName   ?? null,
-      itemPrice:  parsed.data.itemPrice  ?? null,
+      itemName:    parsed.data.itemName    ?? null,
+      itemPrice:   parsed.data.itemPrice   ?? null,
       amountPaise: parsed.data.amountPaise ?? null,
     });
+  });
+
+  // ── POST /api/payment/outcome ──────────────────────────────────────────────
+  router.post('/outcome', (req, res) => {
+    const parsed = OutcomeSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: 'Invalid payment outcome.' });
+    const { orderId, status, error } = parsed.data;
+    const updated = updateAuditEntryStatus(orderId, null, status, error || null, req.currentUser.id)
+      || appendFallbackOutcomeAudit({ user: req.currentUser, orderId, status, error: error || null });
+    return res.json({ success: updated, status });
   });
 
   return router;

@@ -5,6 +5,7 @@ const $ = (sel) => document.querySelector(sel);
 
 /* ── Session state ── */
 const SESSION_KEY = 'agentic-session';
+const CHAT_KEY_PREFIX = 'agentic-chat-';
 let mode = 'login';
 let session = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
 
@@ -21,8 +22,74 @@ const authHeaders = () => ({
    UI STATE SWITCHER
    Shows #auth-view or #dashboard-view based on session
 ══════════════════════════════════════════════════ */
+let _welcomeLoaded = false;
+
+function chatStorageKey() { return session?.user?.id ? `${CHAT_KEY_PREFIX}${session.user.id}` : null; }
+function persistChat() {
+  const chatMessages = $('#chat-messages');
+  const key = chatStorageKey();
+  if (chatMessages && key) localStorage.setItem(key, chatMessages.innerHTML);
+}
+function bindSuggestionPills() {
+  $('#chat-messages')?.querySelectorAll('.suggestion-pill').forEach((button) => {
+    button.onclick = () => submitQuery(button.dataset.query);
+  });
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
+}
+
+function renderQuickActions(replies) {
+  const chatMessages = $('#chat-messages');
+  if (!chatMessages || !Array.isArray(replies) || !replies.length) return;
+  chatMessages.querySelectorAll('.suggestions-group').forEach((el) => el.remove());
+  const group = document.createElement('div');
+  group.className = 'suggestions-group';
+  group.innerHTML = `<span class="suggestions-label">Try one of these</span><div class="suggestion-pills">${replies
+    .map((reply) => `<button type="button" class="suggestion-pill" data-query="${escapeHtml(reply)}">${escapeHtml(reply)}</button>`).join('')}</div>`;
+  chatMessages.appendChild(group);
+  bindSuggestionPills();
+  persistChat();
+  scrollToBottom();
+}
+
+async function initWelcomeMessage() {
+  const chatMessages = $('#chat-messages');
+  if (!chatMessages) return;
+  if (_welcomeLoaded || chatMessages.children.length > 0) return;
+
+  const savedChat = chatStorageKey() && localStorage.getItem(chatStorageKey());
+  if (savedChat) {
+    chatMessages.innerHTML = savedChat;
+    _welcomeLoaded = true;
+    bindSuggestionPills();
+    scrollToBottom();
+    return;
+  }
+
+  try {
+    const r = await fetch('/api/agent/chat', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ query: 'Hello' }),
+    });
+    const d = await r.json();
+    if (r.ok && d.agentResponse) {
+      _welcomeLoaded = true;
+      appendBubble(d.agentResponse, 'agent');
+      if (d.suggestedReplies && Array.isArray(d.suggestedReplies) && d.suggestedReplies.length) {
+        renderQuickActions(d.suggestedReplies);
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to load initial welcome message:', err);
+  }
+}
+
 function showView() {
   const authed = !!session;
+  document.body.classList.toggle('is-authenticated', authed);
 
   $('#auth-view').style.display = authed ? 'none' : '';
   $('#dashboard-view').style.display = authed ? 'block' : 'none';
@@ -32,6 +99,7 @@ function showView() {
     showPage('dashboard');
     loadAudit();
     fetchRzpKey(); // preload the public key in background
+    initWelcomeMessage();
   }
 }
 
@@ -75,44 +143,49 @@ function stage(name, statusObj) {
   const el = $(`[data-step="${name}"]`);
   if (!el) return;
   const b = el.querySelector('b');
+  const title = el.querySelector('strong');
+  const subtext = el.querySelector('small');
+  const defaultSubtext = {
+    Propose: 'Drafting a safe transaction action',
+    Explain: 'Preparing the reasoning and price context',
+    Gate: 'Validating transaction boundaries and ₹10k ceiling',
+    Execute: 'Waiting for gate approval',
+    Audit: 'Waiting for an execution result',
+  }[name];
+  const setCopy = (label, detail = defaultSubtext) => {
+    if (title) title.textContent = label;
+    if (subtext) subtext.textContent = detail;
+  };
 
   if (typeof statusObj === 'string') {
-    el.className = '';
+    el.className = 'neutral';
     b.textContent = '--';
-    if (statusObj === '—') {
-      el.firstChild.textContent = name + ' ';
-    } else {
-      el.firstChild.textContent = name + ': ' + statusObj + ' ';
-    }
+    setCopy(name, statusObj === '—' ? defaultSubtext : statusObj);
     return;
   }
 
-  if (statusObj?.status === 'success') {
+  const status = statusObj?.status || 'pending';
+  if (status === 'success') {
     el.className = 'approved';
     b.textContent = '✓';
-    el.firstChild.textContent = name + ' ';
-  } else if (statusObj?.status === 'failed') {
+    setCopy(name, name === 'Gate' ? 'Transaction approved within policy' : name === 'Audit' ? 'Trace recorded successfully' : 'Completed successfully');
+  } else if (status === 'failed') {
     el.className = 'failed';
-    b.textContent = '❌';
-    if (name === 'Gate' && statusObj.reasons && statusObj.reasons.some(r => r.includes('>₹10k Limit') || r.includes('spending ceiling'))) {
-      el.firstChild.textContent = 'Gate: Rejected (>₹10k Limit) ';
-    } else {
-      el.firstChild.textContent = name + ' ';
-    }
-  } else if (statusObj?.status === 'skipped') {
-    el.className = '';
+    b.textContent = '×';
+    const detail = statusObj?.error || statusObj?.reasons?.[0] || (name === 'Gate' ? 'Transaction rejected by policy' : 'Stage could not complete');
+    setCopy(name === 'Gate' ? 'Gate · Rejected' : name, detail);
+  } else if (status === 'skipped') {
+    el.className = 'skipped';
     b.textContent = '--';
-    if (name === 'Execute' && statusObj.blocked) {
-      el.firstChild.textContent = 'Execute: Blocked ';
-    } else if (name === 'Propose' && statusObj.text) {
-      el.firstChild.textContent = statusObj.text + ' ';
-    } else {
-      el.firstChild.textContent = name + ' ';
-    }
+    setCopy(name === 'Execute' && statusObj?.blocked ? 'Execute · Blocked' : name, statusObj?.reason || statusObj?.text || 'Not required for this request');
+  } else if (status === 'pending' || status === 'active') {
+    el.className = status === 'active' ? 'active' : 'pending';
+    b.textContent = status === 'active' ? '…' : '--';
+    setCopy(name, status === 'active' ? (statusObj?.detail || `Processing ${name.toLowerCase()} stage…`) : (statusObj?.detail || defaultSubtext));
   } else {
-    el.className = '';
+    el.className = 'neutral';
     b.textContent = '--';
-    el.firstChild.textContent = name + ' ';
+    setCopy(name, defaultSubtext);
   }
 }
 
@@ -121,49 +194,59 @@ function stage(name, statusObj) {
    Enriched columns: Time / Item / Gate / Result+TxID
 ══════════════════════════════════════════════════ */
 function renderAuditLog(auditLog) {
-  const tableBody = $('#tx-table-body');
-  if (!tableBody) return;
+  const list = $('#tx-list');
+  if (!list) return;
+  const paymentLog = auditLog.filter((entry) => ['paid', 'failed', 'cancelled'].includes(entry.status));
+  list.innerHTML = paymentLog.slice().reverse().map((x, index) => {
+    const date = new Date(x.paidAt || x.executedAt || Date.now());
+    const amount = formatCurrency(x.amountPaise || x.order?.amount || 0);
+    const item = x.cartItems?.length ? `${x.cartItems.length} item${x.cartItems.length > 1 ? 's' : ''}` : escapeHtml(x.itemName || x.actionType || 'Transaction');
+    const paid = x.status === 'paid';
+    return `<button type="button" class="transaction-row ${paid ? 'is-paid' : ''}" data-audit-index="${index}">
+      <span class="transaction-icon">${paid ? '✓' : '↗'}</span><span class="transaction-main"><strong>${item}</strong><small>${date.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</small></span>
+      <span class="transaction-amount">${amount}<small class="status-${escapeHtml(x.status || 'unknown')}">${escapeHtml(x.status || 'unknown')}</small></span><span class="transaction-arrow">›</span>
+    </button>`;
+  }).join('') || '<div class="empty-history">No payment outcomes yet.</div>';
+  list.querySelectorAll('[data-audit-index]').forEach((button) => {
+    button.onclick = () => {
+      const entry = paymentLog.slice().reverse()[Number(button.dataset.auditIndex)];
+      openReceipt(entry);
+    };
+  });
+}
 
-  const rows = auditLog.slice().reverse().map(x => {
-    const time     = new Date(x.executedAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const gateOk   = x.gate?.approved;
-    const gateText = gateOk ? '✅ Passed' : '❌ Rejected';
+function formatCurrency(paise) { return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Math.round(Number(paise || 0) / 100)); }
 
-    // Determine item label — prefer the enriched fields written by the chat flow
-    let itemLabel = x.actionType || 'N/A';
-    if (x.itemName) {
-      const price = x.itemPrice || (x.amountPaise ? `₹${(x.amountPaise / 100).toLocaleString('en-IN')}` : '');
-      itemLabel = `${x.itemName}${price ? ` (${price})` : ''}`;
-    }
+function openReceipt(entry) {
+  if (!entry) return;
+  const items = entry.cartItems?.length ? entry.cartItems : [{ name: entry.itemName || entry.actionType || 'Transaction', quantity: entry.quantity || 1, totalPaise: entry.amountPaise || 0 }];
+  const total = Number(entry.amountPaise || items.reduce((sum, item) => sum + Number(item.totalPaise || 0), 0));
+  const base = Math.round(total / 1.18);
+  const gst = total - base;
+  const isPaid = entry.status === 'paid';
+  const canRetry = !isPaid && !entry.retryResolved;
+  const receiptTitle = isPaid ? 'Thank you for your purchase' : entry.status === 'cancelled' ? 'Payment was cancelled' : 'Payment was not completed';
+  $('#receipt-content').innerHTML = `<div class="receipt-brand"><span class="receipt-mark">AC</span><div><strong>Agentic Commerce</strong><small>Digital payment receipt</small></div><span class="paid-stamp ${isPaid ? '' : 'not-paid'}">${isPaid ? 'PAID' : escapeHtml(String(entry.status || 'PENDING').toUpperCase())}</span></div>
+    <div class="receipt-store"><p class="eyebrow">STORE RECEIPT</p><h2 id="receipt-title">${receiptTitle}</h2><p>${new Date(entry.paidAt || entry.cancelledAt || entry.failedAt || entry.executedAt || Date.now()).toLocaleString([], { dateStyle: 'long', timeStyle: 'short' })}</p></div>
+    <div class="receipt-items"><div class="receipt-line receipt-label"><span>ITEM</span><span>AMOUNT</span></div>${items.map((item) => `<div class="receipt-line"><span><strong>${escapeHtml(item.name || 'Item')}</strong><small>Qty ${Number(item.quantity || 1)}</small></span><strong>${formatCurrency(item.totalPaise || 0)}</strong></div>`).join('')}</div>
+    <div class="receipt-totals"><div><span>Base price</span><strong>${formatCurrency(base)}</strong></div><div><span>CGST · 9%</span><strong>${formatCurrency(Math.round(gst / 2))}</strong></div><div><span>SGST · 9%</span><strong>${formatCurrency(gst - Math.round(gst / 2))}</strong></div><div class="receipt-total"><span>${isPaid ? 'Total paid' : 'Total amount'}</span><strong>${formatCurrency(total)}</strong></div></div>
+    <div class="receipt-meta"><div><span>Razorpay payment ID</span><strong>${escapeHtml(entry.paymentId || 'Not available')}</strong></div><div><span>Order reference</span><strong>${escapeHtml(entry.order?.id || entry.orderId || 'Not available')}</strong></div>${canRetry ? '<button type="button" class="retry-payment" data-retry-payment>Retry payment</button>' : entry.retryResolved ? '<span class="retry-resolved">Resolved by a later successful payment</span>' : ''}</div>`;
+  $('#receipt-modal').hidden = false;
+  document.body.classList.add('modal-open');
+  const retry = $('#receipt-content [data-retry-payment]');
+  if (retry) retry.onclick = () => { closeReceipt(); showPage('dashboard'); submitQuery('Retry payment'); };
+}
 
-    // Result column — show payment ID for verified transactions
-    let resultLabel = x.status || 'N/A';
-    if (x.status === 'executed' || x.status === 'pending-checkout') {
-      resultLabel = `<span style="color:#0a5743;font-weight:600;">PENDING</span>`;
-    } else if (x.status === 'paid') {
-      const txId = x.paymentId ? `<br><span style="font-size:12px;opacity:0.7;">${x.paymentId}</span>` : '';
-      resultLabel = `<span style="color:#16a34a;font-weight:700;">✅ SUCCESS${txId}</span>`;
-    } else if (x.status === 'rejected') {
-      resultLabel = `<span style="color:#dc2626;font-weight:600;">REJECTED</span>`;
-    } else if (x.status === 'failed') {
-      resultLabel = `<span style="color:#dc2626;font-weight:600;">FAILED</span>`;
-    }
+function closeReceipt() { $('#receipt-modal').hidden = true; document.body.classList.remove('modal-open'); }
 
-    // Gate column — show Razorpay verified badge if applicable
-    let gateDisplay = gateText;
-    if (x.status === 'paid') {
-      gateDisplay = '✅ Razorpay Signature Verified';
-    }
-
-    return `<tr>
-      <td>${time}</td>
-      <td>${itemLabel}</td>
-      <td>${gateDisplay}</td>
-      <td>${resultLabel}</td>
-    </tr>`;
-  }).join('');
-
-  tableBody.innerHTML = rows || '<tr><td colspan="4">No transactions yet.</td></tr>';
+async function recordPaymentOutcome(orderId, status, error) {
+  try {
+    await fetch('/api/payment/outcome', {
+      method: 'POST', headers: authHeaders(),
+      body: JSON.stringify({ orderId, status, error }),
+    });
+    await loadAudit();
+  } catch (_) { /* The payment UI remains usable even if audit sync is unavailable. */ }
 }
 
 /* ── Load audit history ── */
@@ -178,9 +261,14 @@ async function loadAudit() {
    SIGN OUT
 ══════════════════════════════════════════════════ */
 function signOut() {
+  const previousChatKey = chatStorageKey();
   session = null;
   _rzpKeyId = null;
+  _welcomeLoaded = false;
   localStorage.removeItem(SESSION_KEY);
+  if (previousChatKey) localStorage.removeItem(previousChatKey);
+  const chatMessages = $('#chat-messages');
+  if (chatMessages) chatMessages.innerHTML = '';
   showView();
 }
 
@@ -248,13 +336,17 @@ function appendBubble(text, sender) {
   const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const chatMessages = $('#chat-messages');
   if (chatMessages) {
+    const formatted = typeof text === 'string'
+      ? escapeHtml(text).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')
+      : escapeHtml(text);
     chatMessages.innerHTML += `
       <div class="bubble-group ${sender}">
-        <div class="bubble ${sender}">${text}</div>
+        <div class="bubble ${sender}">${formatted}</div>
         <div class="bubble-timestamp">${time}</div>
       </div>
     `;
     scrollToBottom();
+    persistChat();
   }
 }
 
@@ -263,7 +355,9 @@ function appendBubble(text, sender) {
    a `pendingCheckout` payload from /api/agent/chat
 ══════════════════════════════════════════════════ */
 async function openRazorpayCheckout(checkout) {
-  const { orderId, amountPaise, currency, itemName, itemPrice, userName, userEmail } = checkout;
+  const { orderId, amountPaise, currency, items = [], userName, userEmail } = checkout;
+  const itemName = items.length === 1 ? items[0].name : `${items.length || 'Your'} item${items.length === 1 ? '' : 's'}`;
+  const itemPrice = items.length === 1 ? formatCurrency(items[0].totalPaise) : formatCurrency(amountPaise);
 
   // Fetch the public key if we don't have it yet
   if (!_rzpKeyId) await fetchRzpKey();
@@ -278,6 +372,7 @@ async function openRazorpayCheckout(checkout) {
     return;
   }
 
+  let outcomeRecorded = false;
   return new Promise((resolve) => {
     const options = {
       key:         _rzpKeyId,
@@ -287,20 +382,19 @@ async function openRazorpayCheckout(checkout) {
       description: itemName || 'Purchase',
       order_id:    orderId,
       prefill: {
-        name: "Demo Customer",
-        email: "demo@example.com",
-        contact: "+919999999999",
-      },
-      readonly: {
-        contact: true,
-        email: true
+        name: userName || session?.user?.name || 'Customer',
+        email: userEmail || session?.user?.email || 'customer@example.com',
       },
       theme: { color: '#0a5743' },
       modal: {
-        ondismiss() {
-          appendBubble('🚫 Payment cancelled. You can restart the checkout anytime.', 'agent');
+        async ondismiss() {
+          if (outcomeRecorded) return;
+          outcomeRecorded = true;
+          await recordPaymentOutcome(orderId, 'cancelled', 'Payment window closed by the customer.');
+          appendBubble('🚫 Payment cancelled. Your cart is saved. You can retry payment whenever you are ready.', 'agent');
+          renderQuickActions(['Retry payment', 'Browse Catalog']);
           // Update spine — payment not completed
-          stage('Audit', { status: 'failed', error: 'Payment dismissed by user' });
+          stage('Audit', { status: 'failed', error: 'Payment cancelled by customer' });
           resolve({ cancelled: true });
         },
       },
@@ -328,15 +422,13 @@ async function openRazorpayCheckout(checkout) {
           const vData = await vRes.json();
 
           if (vRes.ok && vData.success) {
+            outcomeRecorded = true;
             // ✅ Payment verified — update chat, spine, and audit table
             appendBubble(
-              `✅ <strong>Payment Successful!</strong><br>
-               <span style="font-size:14px;opacity:0.85;">
-                 Purchased: ${itemName} (${itemPrice})<br>
-                 Payment ID: ${razorpay_payment_id}
-               </span>`,
+              `✅ **Payment Successful!**\nPurchased: ${itemName} (${itemPrice})\nPayment ID: ${razorpay_payment_id}`,
               'agent'
             );
+            renderQuickActions(['Browse Catalog', 'Start over']);
 
             stage('Audit', { status: 'success' });
 
@@ -353,23 +445,29 @@ async function openRazorpayCheckout(checkout) {
               status:      'paid',
             });
 
-            // Also refresh from server to pick up any server-persisted records
-            setTimeout(loadAudit, 800);
+            // Refresh immediately so earlier failed/cancelled attempts lose their retry action.
+            await loadAudit();
 
             resolve({ success: true, paymentId: razorpay_payment_id });
           } else {
+            outcomeRecorded = true;
             appendBubble(
-              `❌ <strong>Verification Failed</strong><br>${vData.error || 'Signature mismatch. Contact support.'}<br>Payment ID: ${razorpay_payment_id}`,
+              `❌ **Verification Failed**\n${vData.error || 'Signature mismatch. Contact support.'}\nPayment ID: ${razorpay_payment_id}`,
               'agent'
             );
+            await recordPaymentOutcome(razorpay_order_id, 'failed', 'Payment verification failed.');
             stage('Audit', { status: 'failed', error: 'Signature mismatch' });
+            renderQuickActions(['Retry payment', 'Browse Catalog']);
             resolve({ success: false });
           }
         } catch (_) {
+          outcomeRecorded = true;
           appendBubble(
-            `⚠️ Network error during verification. Contact support with: <strong>${razorpay_payment_id}</strong>`,
+            `⚠️ **Verification could not be completed.**\nContact support with payment ID: ${razorpay_payment_id}`,
             'agent'
           );
+          await recordPaymentOutcome(razorpay_order_id, 'failed', 'Payment verification request failed.');
+          renderQuickActions(['Retry payment', 'Browse Catalog']);
           resolve({ success: false });
         }
       },
@@ -378,12 +476,17 @@ async function openRazorpayCheckout(checkout) {
     const rzp = new Razorpay(options);
 
     rzp.on('payment.failed', function (response) {
+      if (outcomeRecorded) return;
+      outcomeRecorded = true;
       const desc   = response.error?.description ?? 'The payment could not be completed.';
       const reason = response.error?.reason ?? '';
       appendBubble(
-        `❌ <strong>Payment Failed</strong><br>${desc}${reason ? ` (${reason})` : ''}`,
+        `❌ **Payment Failed**\n${desc}${reason ? ` (${reason})` : ''}\nYour cart is saved — you can try the payment again.`,
         'agent'
       );
+      recordPaymentOutcome(orderId, 'failed', desc);
+      renderQuickActions(['Retry payment', 'Browse Catalog']);
+      stage('Audit', { status: 'failed', error: desc });
       resolve({ success: false });
     });
 
@@ -393,98 +496,66 @@ async function openRazorpayCheckout(checkout) {
 
 /* ── Inject a paid row into the audit table immediately (optimistic UI) ── */
 function injectPaidAuditRow(entry) {
-  const tableBody = $('#tx-table-body');
-  if (!tableBody) return;
-
-  const time      = new Date(entry.executedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  const itemLabel = `${entry.itemName} (${entry.itemPrice})`;
-  const txIdHtml  = `<br><span style="font-size:12px;opacity:0.7;">${entry.paymentId}</span>`;
-  const resultHtml = `<span style="color:#16a34a;font-weight:700;">✅ SUCCESS${txIdHtml}</span>`;
-
-  const newRow = document.createElement('tr');
-  newRow.innerHTML = `
-    <td>${time}</td>
-    <td>${itemLabel}</td>
-    <td>✅ Razorpay Signature Verified</td>
-    <td>${resultHtml}</td>
-  `;
-
-  // Prepend so newest is at the top (matching the reverse-sorted server list)
-  tableBody.insertBefore(newRow, tableBody.firstChild);
-
-  // Remove the placeholder "No transactions" row if present
-  const placeholder = tableBody.querySelector('td[colspan]');
-  if (placeholder) placeholder.closest('tr').remove();
+  const list = $('#tx-list');
+  if (!list) return;
+  const empty = list.querySelector('.empty-history');
+  if (empty) empty.remove();
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'transaction-row is-paid';
+  button.innerHTML = `<span class="transaction-icon">✓</span><span class="transaction-main"><strong>${escapeHtml(entry.itemName || 'Purchase')}</strong><small>${new Date(entry.executedAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</small></span><span class="transaction-amount">${formatCurrency(entry.amountPaise)}<small class="status-paid">paid</small></span><span class="transaction-arrow">›</span>`;
+  button.onclick = () => openReceipt(entry);
+  list.prepend(button);
 }
 
 /* ══════════════════════════════════════════════════
    CHAT FORM
 ══════════════════════════════════════════════════ */
-$('#chat-form').onsubmit = async (e) => {
-  e.preventDefault();
-
-  const q = $('#query').value;
-  if (!q.trim()) return;
-
+async function submitQuery(query) {
+  const q = query.trim();
+  if (!q) return;
+  $('#chat-messages').querySelectorAll('.suggestions-group').forEach((el) => el.remove());
   appendBubble(q, 'user');
   $('#query').value = '';
 
-  // Reset spine to pending state while request is in-flight
-  ['Propose','Explain','Gate','Execute','Audit'].forEach(s => stage(s, { status: 'pending' }));
-  $('#reasoning').textContent = 'Thinking…';
+  ['Propose','Explain','Gate','Execute','Audit'].forEach((name) => stage(name, { status: 'pending' }));
+  stage('Propose', { status: 'active', detail: 'Interpreting your request and drafting an action…' });
+  $('#reasoning').textContent = 'Processing your request through the safety spine…';
 
-  const r = await fetch('/api/agent/chat', {
-    method: 'POST',
-    headers: authHeaders(),
-    body: JSON.stringify({ query: q }),
-  });
-  const d = await r.json();
+  try {
+    const r = await fetch('/api/agent/chat', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ query: q }),
+    });
+    const d = await r.json();
+    if (!r.ok) {
+      $('#reasoning').textContent = d.error || 'Something went wrong.';
+      stage('Propose', { status: 'failed', error: d.error || 'Request failed' });
+      return;
+    }
 
-  if (!r.ok) {
-    $('#reasoning').textContent = d.error;
-    return;
+    appendBubble(d.agentResponse, 'agent');
+    if (d.suggestedReplies?.length) renderQuickActions(d.suggestedReplies);
+    if (d.spine) ['Propose','Explain','Gate','Execute','Audit'].forEach((name) => stage(name, d.spine[name]));
+    if (d.spine?.gate?.reasons?.length) $('#reasoning').textContent = d.spine.gate.reasons.join(' ');
+    else if (d.spine?.propose?.error) $('#reasoning').textContent = d.spine.propose.error;
+    else $('#reasoning').textContent = 'Trace complete.';
+    if (d.auditLog) renderAuditLog(d.auditLog); else loadAudit();
+    if (d.pendingCheckout) setTimeout(() => openRazorpayCheckout(d.pendingCheckout), 600);
+  } catch (error) {
+    $('#reasoning').textContent = 'Unable to reach the commerce agent. Please try again.';
+    stage('Audit', { status: 'failed', error: error.message });
   }
+}
 
-  appendBubble(d.agentResponse, 'agent');
-
-  if (d.spine) {
-    stage('Propose', d.spine.propose);
-    stage('Explain', d.spine.explain);
-    stage('Gate',    d.spine.gate);
-    stage('Execute', d.spine.execute);
-    stage('Audit',   d.spine.audit);
-  }
-
-  if (d.spine?.gate?.reasons?.length) {
-    $('#reasoning').textContent = d.spine.gate.reasons.join(' ');
-  } else if (d.spine?.propose?.error) {
-    $('#reasoning').textContent = d.spine.propose.error;
-  } else {
-    $('#reasoning').textContent = 'Ready.';
-  }
-
-  if (d.auditLog) {
-    renderAuditLog(d.auditLog);
-  } else {
-    loadAudit();
-  }
-
-  // ── Razorpay checkout if the agent returned a pendingCheckout ──────────────
-  if (d.pendingCheckout) {
-    // Small delay so the user sees the agent message before the modal opens
-    setTimeout(() => openRazorpayCheckout(d.pendingCheckout), 600);
-  }
+$('#chat-form').onsubmit = async (e) => {
+  e.preventDefault();
+  await submitQuery($('#query').value);
 };
 
-/* ══════════════════════════════════════════════════
-   QUICK-ACTION BUTTONS
-══════════════════════════════════════════════════ */
-document.querySelectorAll('[data-query]').forEach(btn => {
-  btn.onclick = () => {
-    $('#query').value = btn.dataset.query;
-    $('#chat-form').requestSubmit();
-  };
-});
+document.querySelectorAll('[data-close-receipt]').forEach((button) => { button.onclick = closeReceipt; });
+document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !$('#receipt-modal').hidden) closeReceipt(); });
 
 /* ══════════════════════════════════════════════════
    BOOTSTRAP

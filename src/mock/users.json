@@ -1,1 +1,20 @@
-﻿[{"id":"user_demo","name":"Demo User","email":"demo@example.com","password":"password123"}]
+[
+  {
+    "id": "user_demo",
+    "name": "Demo User",
+    "email": "demo@example.com",
+    "password": "password123"
+  },
+  {
+    "id": "9092615a-d641-4a02-bbca-a3a29d3c2b84",
+    "name": "Test User",
+    "email": "test@example.com",
+    "password": "password123"
+  },
+  {
+    "id": "6da4eafa-bd12-4b6e-b174-82cb4b0fc6fc",
+    "name": "CartTest User",
+    "email": "carttest@example.com",
+    "password": "testpass99"
+  }
+]
