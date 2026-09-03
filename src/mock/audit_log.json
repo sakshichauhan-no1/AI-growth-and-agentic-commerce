@@ -3202,5 +3202,106 @@
     },
     "paidAt": "2026-09-03T18:06:37.982Z",
     "paymentId": "pay_TXemqNsk6XOIIO"
+  },
+  {
+    "actionId": "action_1788465771828_121c3b",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-03T20:02:51.830Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-03T20:02:51.829Z"
+    },
+    "status": "cart-add",
+    "itemName": "Mechanical Keyboard",
+    "itemPrice": "₹3,499",
+    "quantity": 1,
+    "basePaise": 349900,
+    "gstPaise": 62982,
+    "amountPaise": 412882
+  },
+  {
+    "actionId": "action_1788465774344_a9c1f7",
+    "actionType": "UPSELL",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-03T20:02:54.344Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-03T20:02:54.344Z"
+    },
+    "status": "cart-add",
+    "itemName": "Extended Warranty",
+    "itemPrice": "₹499",
+    "quantity": 1,
+    "basePaise": 49900,
+    "gstPaise": 8982,
+    "amountPaise": 58882
+  },
+  {
+    "actionId": "checkout_1788465782089_5a8ae3",
+    "actionType": "CART_CHECKOUT",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-03T20:03:02.089Z",
+    "status": "paid",
+    "cartItems": [
+      {
+        "productId": "sku_keyboard",
+        "name": "Mechanical Keyboard",
+        "quantity": 1,
+        "totalPaise": 412882
+      },
+      {
+        "productId": "sku_warranty",
+        "name": "Extended Warranty",
+        "quantity": 1,
+        "totalPaise": 58882
+      }
+    ],
+    "amountPaise": 471764,
+    "order": {
+      "id": "order_TXgmFpNyZ1Y84N"
+    },
+    "paidAt": "2026-09-03T20:04:13.434Z",
+    "paymentId": "pay_TXgn6pZcbvr6JA"
+  },
+  {
+    "actionId": "action_1788465879080_ab695e",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-03T20:04:39.080Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-03T20:04:39.080Z"
+    },
+    "status": "cart-add",
+    "itemName": "Mechanical Keyboard",
+    "itemPrice": "₹3,499",
+    "quantity": 1,
+    "basePaise": 349900,
+    "gstPaise": 62982,
+    "amountPaise": 412882
   }
 ]

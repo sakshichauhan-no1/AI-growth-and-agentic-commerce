@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  --font-heading: 'Helvetica Now Display Bold', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --color-text: #0d1a15;
+  --color-accent: #0a5743;
+  --color-login-bg: #F2F2EE;
+
+  /* Aliases for the specific components */
+  --vs-font-heading: 'Helvetica Now Display Bold', sans-serif;
+  --vs-font-body: 'Inter', sans-serif;
+  --vs-color-text: #0d1a15;
+  --vs-color-accent: #0a5743;
+}
+
+@layer base {
+  html, body, #root {
+    @apply h-full w-full;
+  }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--color-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    @apply overflow-x-hidden;
+  }
+
+  * {
+    @apply box-border;
+  }
+}
+
+@layer utilities {
+  .font-heading {
+    font-family: var(--font-heading);
+  }
+
+  .font-body {
+    font-family: var(--font-body);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(10, 87, 67, 0.3); /* #0a5743 */
+  border-radius: 4px;
+}
