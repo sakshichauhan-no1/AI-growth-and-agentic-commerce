@@ -3375,5 +3375,83 @@
     "basePaise": 29900,
     "gstPaise": 5382,
     "amountPaise": 35282
+  },
+  {
+    "actionId": "action_1788515774439_015724",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T09:56:14.441Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T09:56:14.440Z"
+    },
+    "status": "cart-add",
+    "itemName": "USB-C Cable",
+    "itemPrice": "₹299",
+    "quantity": 1,
+    "basePaise": 29900,
+    "gstPaise": 5382,
+    "amountPaise": 35282
+  },
+  {
+    "actionId": "action_1788515792431_aaeb17",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T09:56:32.431Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T09:56:32.431Z"
+    },
+    "status": "cart-add",
+    "itemName": "Desk LED Lamp",
+    "itemPrice": "₹799",
+    "quantity": 1,
+    "basePaise": 79900,
+    "gstPaise": 14382,
+    "amountPaise": 94282
+  },
+  {
+    "actionId": "checkout_1788515812978_0c8753",
+    "actionType": "CART_CHECKOUT",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T09:56:52.978Z",
+    "status": "cancelled",
+    "cartItems": [
+      {
+        "productId": "sku_cable",
+        "name": "USB-C Cable",
+        "quantity": 1,
+        "totalPaise": 35282
+      },
+      {
+        "productId": "sku_lamp",
+        "name": "Desk LED Lamp",
+        "quantity": 1,
+        "totalPaise": 94282
+      }
+    ],
+    "amountPaise": 129564,
+    "order": {
+      "id": "order_TXuz4jD4BP8CMr"
+    },
+    "cancelledAt": "2026-09-04T09:57:19.546Z",
+    "error": "Payment window closed by the customer."
   }
 ]
