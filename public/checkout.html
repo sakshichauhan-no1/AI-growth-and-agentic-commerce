@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Agentic Checkout</title>
   <meta name="description" content="Agentic Checkout — safe autonomous commerce with a full audit spine.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%230a5743' d='M20 20h25v25H20zM55 20h25v25H55zM20 55h25v25H20zM55 55h25v25H55z'/%3E%3Cpath fill='%230a5743' d='M35 35l30 30-10 10-30-30z'/%3E%3C/svg%3E" />
 
   <!-- Font Imports -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -289,7 +290,34 @@
     .panel h2 {
       font-size: 22px;
       font-weight: 700;
-      margin-bottom: 16px;
+      margin-bottom: 8px;
+    }
+
+    /* Compact checkout rhythm: keep headings and the inspector scannable. */
+    .workspace {
+      gap: 16px !important;
+    }
+
+    .workspace > .panel,
+    .history-panel {
+      padding: 16px !important;
+    }
+
+    .workspace > .panel h2,
+    .section-heading h2 {
+      margin-bottom: 8px;
+    }
+
+    .spine {
+      gap: 8px !important;
+    }
+
+    .spine li {
+      padding: 10px 12px !important;
+    }
+
+    .spine-copy {
+      gap: 2px !important;
     }
 
     .eyebrow {

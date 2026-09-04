@@ -441,6 +441,38 @@ async function processMessage(userId, query, options = {}) {
     const spineTrace = pendingSpine();
     _lastCheckoutCarts.set(userId, cart.items.map((item) => ({ ...item })));
 
+    // Enforce the non-negotiable aggregate spending ceiling before creating a
+    // payment order or moving any cart items into checkout state.
+    if (total > 1000000) {
+      const actionId = `checkout_rejected_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`;
+      const reason = `Total payable ${fmt(total)} exceeds the ₹10,000 agent spending ceiling.`;
+      spineTrace.propose = { status: 'success' };
+      spineTrace.explain = { status: 'success' };
+      spineTrace.gate = { status: 'failed', reasons: [reason], amountPaise: total };
+      spineTrace.execute = { status: 'failed', error: 'Transaction blocked by spending policy.' };
+      spineTrace.audit = { status: 'failed', error: 'Policy violation logged.' };
+      audit({
+        actionId,
+        actionType: 'CART_CHECKOUT',
+        userId: user.id,
+        user: { id: user.id, name: user.name, email: user.email },
+        executedAt: new Date().toISOString(),
+        status: 'rejected',
+        error: reason,
+        cartItems: cart.items.map((item) => ({ productId: item.productId, name: item.name, quantity: item.quantity, totalPaise: item.totalPaise })),
+        amountPaise: total,
+      });
+      clearCart(userId);
+      return {
+        success: false,
+        agentResponse: `❌ **Order blocked:** Total payable **${fmt(total)}** exceeds the safety spending limit of **₹10,000**. The cart was reset; please choose a lower-value order.`,
+        suggestedReplies: greetingSuggestions(rawCatalog),
+        spineTrace,
+        cartState: getCart(userId),
+        pendingCheckout: null,
+      };
+    }
+
     let rzpOrderId = null;
     if (typeof createRazorpayOrder === 'function') {
       try {
@@ -566,6 +598,7 @@ async function processMessage(userId, query, options = {}) {
       spineTrace.gate = {
         status: gated.gate.approved ? 'success' : 'failed',
         reasons: gated.gate.reasons,
+        amountPaise: gated.amountPaise,
       };
     } catch (err) {
       spineTrace.propose = { status: 'failed', error: err.message };

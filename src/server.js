@@ -21,7 +21,9 @@ const rawCatalog = [
   { id: 'sku_lamp', name: 'Desk LED Lamp', keywords: ['lamp', 'desk lamp', 'led lamp', 'light'], priceInPaise: 79900, displayPrice: '₹799' },
   { id: 'sku_bottle', name: 'Thermal Water Bottle', keywords: ['bottle', 'water bottle', 'flask', 'thermos'], priceInPaise: 59900, displayPrice: '₹599' },
   { id: 'sku_fan', name: 'Mini Desk Fan', keywords: ['fan', 'desk fan', 'mini fan', 'cooler'], priceInPaise: 49900, displayPrice: '₹499' },
-  { id: 'sku_organizer', name: 'Desk Cable Organizer', keywords: ['organizer', 'cable organizer', 'desk organizer'], priceInPaise: 29900, displayPrice: '₹299' }
+  { id: 'sku_organizer', name: 'Desk Cable Organizer', keywords: ['organizer', 'cable organizer', 'desk organizer'], priceInPaise: 29900, displayPrice: '₹299' },
+  { id: 'sku_workstation', name: 'Pro Workstation Laptop', keywords: ['workstation', 'pro laptop', 'high performance laptop'], priceInPaise: 8500000, displayPrice: '₹85,000' },
+  { id: 'sku_server_unit', name: 'Enterprise Server Unit', keywords: ['server', 'enterprise server', 'server unit'], priceInPaise: 12000000, displayPrice: '₹1,20,000' }
 ];
 
 const catalog = rawCatalog.map(c => ({ ...c, price: c.priceInPaise, stock: 100 }));

@@ -34,5 +34,23 @@
     "name": "Premium Laptop",
     "price": 8500000,
     "stock": 100
+  },
+  {
+    "id": "sku_workstation",
+    "name": "Pro Workstation Laptop",
+    "keywords": ["workstation", "pro laptop", "high performance laptop"],
+    "priceInPaise": 8500000,
+    "price": 8500000,
+    "displayPrice": "₹85,000",
+    "stock": 100
+  },
+  {
+    "id": "sku_server_unit",
+    "name": "Enterprise Server Unit",
+    "keywords": ["server", "enterprise server", "server unit"],
+    "priceInPaise": 12000000,
+    "price": 12000000,
+    "displayPrice": "₹1,20,000",
+    "stock": 100
   }
 ]

@@ -4333,5 +4333,102 @@
     "basePaise": 349900,
     "gstPaise": 62982,
     "amountPaise": 412882
+  },
+  {
+    "actionId": "action_1788549798750_246616",
+    "actionType": "UPSELL",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T19:23:18.751Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T19:23:18.751Z"
+    },
+    "status": "cart-add",
+    "itemName": "Extended Warranty",
+    "itemPrice": "₹499",
+    "quantity": 8,
+    "basePaise": 399200,
+    "gstPaise": 71856,
+    "amountPaise": 471056
+  },
+  {
+    "actionId": "checkout_1788549806022_bb8011",
+    "actionType": "CART_CHECKOUT",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T19:23:26.022Z",
+    "status": "cancelled",
+    "cartItems": [
+      {
+        "productId": "sku_cable",
+        "name": "USB-C Cable",
+        "quantity": 1,
+        "totalPaise": 35282
+      },
+      {
+        "productId": "sku_cable",
+        "name": "USB-C Cable",
+        "quantity": 1,
+        "totalPaise": 35282
+      },
+      {
+        "productId": "sku_cable",
+        "name": "USB-C Cable",
+        "quantity": 1,
+        "totalPaise": 35282
+      },
+      {
+        "productId": "sku_mouse",
+        "name": "Wireless Mouse",
+        "quantity": 1,
+        "totalPaise": 153282
+      },
+      {
+        "productId": "sku_cable",
+        "name": "USB-C Cable",
+        "quantity": 1,
+        "totalPaise": 35282
+      },
+      {
+        "productId": "sku_cable",
+        "name": "USB-C Cable",
+        "quantity": 1,
+        "totalPaise": 35282
+      },
+      {
+        "productId": "sku_cable",
+        "name": "USB-C Cable",
+        "quantity": 1,
+        "totalPaise": 35282
+      },
+      {
+        "productId": "sku_keyboard",
+        "name": "Mechanical Keyboard",
+        "quantity": 1,
+        "totalPaise": 412882
+      },
+      {
+        "productId": "sku_warranty",
+        "name": "Extended Warranty",
+        "quantity": 8,
+        "totalPaise": 471056
+      }
+    ],
+    "amountPaise": 1248912,
+    "order": {
+      "id": "order_TY4dXz9Fxztu3r"
+    },
+    "cancelledAt": "2026-09-04T19:23:36.192Z",
+    "error": "Payment window closed by the customer."
   }
 ]

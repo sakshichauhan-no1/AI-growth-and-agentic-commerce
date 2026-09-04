@@ -409,10 +409,10 @@ function hasActionableCommerce(query, data) {
 
 function normalizedSpine(trace, data, query) {
   const result = {};
-  const commerce = hasActionableCommerce(query, data);
   const addOn = isAddOnIntent(query);
-  const directProduct = isDirectProductQuery(query, data);
   const catalogProduct = matchedCatalogItem(query, data);
+  const commerce = hasActionableCommerce(query, data) || Boolean(catalogProduct);
+  const directProduct = isDirectProductQuery(query, data);
   SPINE_STEPS.forEach((name) => {
     const raw = spineSource(trace, name);
     if (typeof raw === 'object' && raw) {
@@ -461,6 +461,39 @@ function normalizedSpine(trace, data, query) {
       detail: 'Audit blocked because no authorized action executed.',
     };
     return result;
+  }
+
+  const gateReasons = result.Gate?.reasons || [];
+  const overLimit = result.Gate?.status === 'failed'
+    && gateReasons.some((reason) => /exceed|ceiling|limit/i.test(reason));
+  if (overLimit) {
+    const total = Number(result.Gate.amountPaise) > 0
+      ? `₹${(result.Gate.amountPaise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+      : formatSpineAmount(data);
+    result.Propose = {
+      status: 'success',
+      detail: `Item Identified: ${catalogProduct?.name || extractedTarget(query, data)} | Requested Total: ${total}`,
+    };
+    result.Explain = {
+      status: 'success',
+      detail: 'Context & Stock Validated | Price Parsed',
+    };
+    result.Gate = {
+      status: 'failed',
+      cascadeFailure: true,
+      error: `Total Payable (${total}) Exceeds Policy Limit (₹10,000)`,
+      detail: `GATE REJECTED: Total Payable (${total}) Exceeds Policy Limit (₹10,000)`,
+    };
+    result.Execute = {
+      status: 'failed',
+      error: 'Payment prevented',
+      detail: 'Transaction Blocked | Payment Prevented',
+    };
+    result.Audit = {
+      status: 'failed',
+      error: 'Policy violation logged',
+      detail: `Policy Violation Logged #${Array.isArray(data?.auditLog) ? data.auditLog.length : 'ID'}`,
+    };
   }
 
   if (addOn && !data?.pendingCheckout) {
@@ -578,6 +611,12 @@ async function renderSpineSequentially(trace, data, query, runId) {
       // Non-commerce input intentionally reports both the Explain failure and
       // the immediate Gate block before halting Execute and Audit.
       if (name === 'Explain' && results.Gate?.status === 'failed') continue;
+      if (result.cascadeFailure) {
+        for (let rest = index + 1; rest < SPINE_STEPS.length; rest += 1) {
+          stage(SPINE_STEPS[rest], results[SPINE_STEPS[rest]]);
+        }
+        return results;
+      }
       for (let rest = index + 1; rest < SPINE_STEPS.length; rest += 1) {
         stage(SPINE_STEPS[rest], { status: 'skipped', blocked: true, reason: `Skipped after ${name} failed.` });
       }
@@ -780,6 +819,16 @@ async function openRazorpayCheckout(checkout) {
   const { orderId, amountPaise, currency, items = [], userName, userEmail } = checkout;
   const itemName = items.length === 1 ? items[0].name : `${items.length || 'Your'} item${items.length === 1 ? '' : 's'}`;
   const itemPrice = items.length === 1 ? formatCurrency(items[0].totalPaise) : formatCurrency(amountPaise);
+
+  // Defense in depth: never open Razorpay for a payload above the hard limit.
+  if (Number(amountPaise) > 1000000) {
+    appendBubble(`❌ **Payment prevented:** Total payable ${itemPrice} exceeds the safety limit of ₹10,000.`, 'agent');
+    markPaymentPrerequisites();
+    stage('Gate', { status: 'failed', error: 'Total exceeds ₹10,000 policy limit', detail: `GATE REJECTED: Total Payable (${itemPrice}) Exceeds Policy Limit (₹10,000)` });
+    stage('Execute', { status: 'failed', error: 'Payment prevented', detail: 'Transaction Blocked | Payment Prevented' });
+    stage('Audit', { status: 'failed', error: 'Policy violation logged', detail: 'Policy Violation Logged' });
+    return;
+  }
 
   // Fetch the public key if we don't have it yet
   if (!_rzpKeyId) await fetchRzpKey();
