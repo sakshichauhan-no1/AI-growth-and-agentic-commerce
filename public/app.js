@@ -139,54 +139,118 @@ async function fetchRzpKey() {
 }
 
 /* ── Spine step indicator ── */
+
+// Step labels and idle descriptions for the 5-step pipeline
+const SPINE_META = {
+  Propose: {
+    label:   '① Intent & Proposal',
+    idle:    'Waiting — will parse items, quantities & intent',
+    active:  'Parsing your request — identifying items, quantities & intent…',
+    success: 'Intent recognized — items, quantities & intent extracted',
+    skipped: 'No transaction intent detected in this request',
+  },
+  Explain: {
+    label:   '② Explainability',
+    idle:    'Waiting — will validate availability & pricing logic',
+    active:  'Validating product availability and pricing logic…',
+    success: 'Pricing & availability confirmed — reasoning attached',
+    skipped: 'No pricing validation required for this request',
+  },
+  Gate: {
+    label:   '③ Policy Gate',
+    idle:    'Waiting — will check spending limits (<₹10k) & authorization',
+    active:  'Checking spending limits (< ₹10,000) & user authorization…',
+    success: 'Policy gate passed — transaction approved within limits',
+    failed:  'Gate Failed: Amount Exceeds Limit',
+    skipped: 'Gate not required — no payment action triggered',
+  },
+  Execute: {
+    label:   '④ Execution',
+    idle:    'Waiting — will trigger Razorpay order & signature verification',
+    active:  'Creating Razorpay order & verifying payment signature…',
+    success: 'Razorpay order created — awaiting payment confirmation',
+    blocked: 'Execute Blocked — gate rejected this transaction',
+    skipped: 'Execution skipped — no payment required',
+  },
+  Audit: {
+    label:   '⑤ Audit Log',
+    idle:    'Waiting — will write transaction record to /api/audit-log',
+    active:  'Writing transaction record to /api/audit-log…',
+    success: 'Audit trace recorded successfully',
+    failed:  'Audit write failed — record may be incomplete',
+    skipped: 'No audit entry required',
+  },
+};
+
 function stage(name, statusObj) {
   const el = $(`[data-step="${name}"]`);
   if (!el) return;
-  const b = el.querySelector('b');
+  const b     = el.querySelector('b');
   const title = el.querySelector('strong');
-  const subtext = el.querySelector('small');
-  const defaultSubtext = {
-    Propose: 'Drafting a safe transaction action',
-    Explain: 'Preparing the reasoning and price context',
-    Gate: 'Validating transaction boundaries and ₹10k ceiling',
-    Execute: 'Waiting for gate approval',
-    Audit: 'Waiting for an execution result',
-  }[name];
-  const setCopy = (label, detail = defaultSubtext) => {
-    if (title) title.textContent = label;
-    if (subtext) subtext.textContent = detail;
+  const sub   = el.querySelector('small');
+  const meta  = SPINE_META[name] || {};
+
+  const setLabel = (label, detail) => {
+    if (title) title.textContent = label  ?? meta.label  ?? name;
+    if (sub)   sub.textContent   = detail ?? meta.idle   ?? '';
   };
 
+  // Reset-only string shorthand (legacy support)
   if (typeof statusObj === 'string') {
     el.className = 'neutral';
     b.textContent = '--';
-    setCopy(name, statusObj === '—' ? defaultSubtext : statusObj);
+    setLabel(meta.label, statusObj === '—' ? meta.idle : statusObj);
     return;
   }
 
   const status = statusObj?.status || 'pending';
+
   if (status === 'success') {
     el.className = 'approved';
     b.textContent = '✓';
-    setCopy(name, name === 'Gate' ? 'Transaction approved within policy' : name === 'Audit' ? 'Trace recorded successfully' : 'Completed successfully');
+    setLabel(meta.label, statusObj?.detail || meta.success || 'Completed successfully');
+
   } else if (status === 'failed') {
     el.className = 'failed';
-    b.textContent = '×';
-    const detail = statusObj?.error || statusObj?.reasons?.[0] || (name === 'Gate' ? 'Transaction rejected by policy' : 'Stage could not complete');
-    setCopy(name === 'Gate' ? 'Gate · Rejected' : name, detail);
+    b.textContent = '✕';
+    const rawErr  = statusObj?.error || statusObj?.reasons?.[0];
+    // Build a named error badge label, e.g. "Gate Failed: Amount Exceeds Limit"
+    const errLabel = name === 'Gate'
+      ? (rawErr?.toLowerCase().includes('limit') ? 'Gate Failed: Amount Exceeds Limit'
+        : rawErr?.toLowerCase().includes('auth')  ? 'Gate Failed: Unauthorized'
+        : meta.failed || 'Gate Failed')
+      : name === 'Propose'
+      ? (rawErr ? `Intent Unrecognized: ${rawErr}` : 'Intent Unrecognized')
+      : `${meta.label} Failed`;
+    setLabel(errLabel, rawErr || meta.failed || 'Stage could not complete');
+
   } else if (status === 'skipped') {
     el.className = 'skipped';
     b.textContent = '--';
-    setCopy(name === 'Execute' && statusObj?.blocked ? 'Execute · Blocked' : name, statusObj?.reason || statusObj?.text || 'Not required for this request');
-  } else if (status === 'pending' || status === 'active') {
-    el.className = status === 'active' ? 'active' : 'pending';
-    b.textContent = status === 'active' ? '…' : '--';
-    setCopy(name, status === 'active' ? (statusObj?.detail || `Processing ${name.toLowerCase()} stage…`) : (statusObj?.detail || defaultSubtext));
+    const isBlocked = name === 'Execute' && statusObj?.blocked;
+    setLabel(
+      isBlocked ? (meta.blocked || 'Execute · Blocked') : meta.label,
+      statusObj?.reason || statusObj?.text || (isBlocked ? meta.blocked : meta.skipped) || 'Not required'
+    );
+
+  } else if (status === 'active') {
+    el.className = 'active';
+    b.textContent = '…';
+    setLabel(meta.label, statusObj?.detail || meta.active || `Processing ${name}…`);
+
   } else {
-    el.className = 'neutral';
+    // pending or unknown → show idle state
+    el.className = status === 'pending' ? 'pending' : 'neutral';
     b.textContent = '--';
-    setCopy(name, defaultSubtext);
+    setLabel(meta.label, statusObj?.detail || meta.idle || '');
   }
+}
+
+/* ── Show a named error badge in the reasoning panel ── */
+function showErrorBadge(badgeText, detail) {
+  const el = $('#reasoning');
+  if (!el) return;
+  el.innerHTML = `<span style="display:inline-flex;align-items:center;gap:8px;background:#fff5f3;border:1px solid #e3a39b;border-radius:8px;padding:8px 12px;font-weight:700;color:#c14338;font-size:13px;">✕ ${escapeHtml(badgeText)}</span>${detail ? `<span style="display:block;margin-top:8px;color:#718078;font-size:12px;">${escapeHtml(detail)}</span>` : ''}`;
 }
 
 /* ══════════════════════════════════════════════════
@@ -518,9 +582,11 @@ async function submitQuery(query) {
   appendBubble(q, 'user');
   $('#query').value = '';
 
+  // Reset all steps to pending and advance Propose to active immediately
   ['Propose','Explain','Gate','Execute','Audit'].forEach((name) => stage(name, { status: 'pending' }));
-  stage('Propose', { status: 'active', detail: 'Interpreting your request and drafting an action…' });
-  $('#reasoning').textContent = 'Processing your request through the safety spine…';
+  stage('Propose', { status: 'active' });
+  const reasoningEl = $('#reasoning');
+  if (reasoningEl) reasoningEl.textContent = 'Processing your request through the safety spine…';
 
   try {
     const r = await fetch('/api/agent/chat', {
@@ -529,23 +595,55 @@ async function submitQuery(query) {
       body: JSON.stringify({ query: q }),
     });
     const d = await r.json();
+
     if (!r.ok) {
-      $('#reasoning').textContent = d.error || 'Something went wrong.';
-      stage('Propose', { status: 'failed', error: d.error || 'Request failed' });
+      // Network/server error — mark Propose as failed with error badge
+      const errMsg = d.error || 'Request failed';
+      stage('Propose', { status: 'failed', error: errMsg });
+      showErrorBadge('Intent Unrecognized', errMsg);
       return;
     }
 
     appendBubble(d.agentResponse, 'agent');
     if (d.suggestedReplies?.length) renderQuickActions(d.suggestedReplies);
-    if (d.spine) ['Propose','Explain','Gate','Execute','Audit'].forEach((name) => stage(name, d.spine[name]));
-    if (d.spine?.gate?.reasons?.length) $('#reasoning').textContent = d.spine.gate.reasons.join(' ');
-    else if (d.spine?.propose?.error) $('#reasoning').textContent = d.spine.propose.error;
-    else $('#reasoning').textContent = 'Trace complete.';
+
+    if (d.spine) {
+      // Apply each step result sequentially — prior passing steps remain green
+      ['Propose','Explain','Gate','Execute','Audit'].forEach((name) => stage(name, d.spine[name]));
+
+      // Determine which step failed (if any) and show the error badge
+      const steps = ['Propose','Explain','Gate','Execute','Audit'];
+      const failedStep = steps.find((n) => d.spine[n]?.status === 'failed');
+
+      if (failedStep) {
+        const failData = d.spine[failedStep];
+        const rawErr   = failData?.error || failData?.reasons?.[0] || '';
+        let badge;
+        if (failedStep === 'Gate') {
+          badge = rawErr?.toLowerCase().includes('limit') ? 'Gate Failed: Amount Exceeds Limit'
+                : rawErr?.toLowerCase().includes('auth')  ? 'Gate Failed: Unauthorized'
+                : 'Gate Failed';
+        } else if (failedStep === 'Propose') {
+          badge = 'Intent Unrecognized';
+        } else {
+          badge = `${SPINE_META[failedStep]?.label || failedStep} Failed`;
+        }
+        showErrorBadge(badge, rawErr || d.spine[failedStep]?.reasons?.join(' ') || '');
+      } else if (d.spine?.Gate?.reasons?.length) {
+        if (reasoningEl) reasoningEl.textContent = d.spine.Gate.reasons.join(' ');
+      } else {
+        if (reasoningEl) reasoningEl.textContent = 'Trace complete — all 5 spine steps evaluated.';
+      }
+    } else {
+      if (reasoningEl) reasoningEl.textContent = 'Trace complete.';
+    }
+
     if (d.auditLog) renderAuditLog(d.auditLog); else loadAudit();
     if (d.pendingCheckout) setTimeout(() => openRazorpayCheckout(d.pendingCheckout), 600);
+
   } catch (error) {
-    $('#reasoning').textContent = 'Unable to reach the commerce agent. Please try again.';
-    stage('Audit', { status: 'failed', error: error.message });
+    stage('Propose', { status: 'failed', error: 'Cannot reach agent' });
+    showErrorBadge('Agent Unreachable', 'Unable to reach the commerce agent. Please try again.');
   }
 }
 

@@ -301,10 +301,20 @@
       justify-content: space-between;
       align-items: center;
       background: #0a5743 !important;
-      padding: 16px 32px;
-      margin-bottom: 24px;
+      padding: 20px 0;
+      margin-bottom: 0;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       color: #ffffff !important;
+    }
+
+    header.navbar .navbar-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .nav-left {
@@ -357,55 +367,46 @@
       padding: 8px 14px;
     }
 
-    /* --- FOOTER STYLES (#0a5743) --- */
+    /* --- FOOTER STYLES (Agentic Commerce — matches hero Footer.tsx) --- */
     footer.site-footer {
       position: static;
       flex: 0 0 auto;
       flex-shrink: 0;
       background: #0a5743 !important;
       color: #f1f5f9 !important;
-      padding: 48px 32px 24px;
-      margin-top: 0;
+      padding: 56px 32px 28px;
+      margin-top: 80px;
       font-size: 14px;
+      font-family: 'Inter', sans-serif;
     }
 
-    .footer-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 32px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.25);
-      margin-bottom: 32px;
+    .footer-inner {
+      max-width: 1280px;
+      margin: 0 auto;
     }
 
-    .footer-brand {
-      font-size: 22px;
-      font-weight: 700;
-      color: #ffffff !important;
-    }
-
-    .footer-tagline {
-      color: #e2e8f0 !important;
-      font-size: 16px;
-    }
-
-    .lang-selector select {
-      background: rgba(255, 255, 255, 0.18) !important;
-      color: #ffffff !important;
-      border: 1px solid rgba(255, 255, 255, 0.35) !important;
-      padding: 8px 14px;
-      font-size: 14px;
-      outline: none;
-    }
-
-    .footer-grid {
+    .footer-columns {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 32px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 40px;
       margin-bottom: 40px;
     }
 
-    .footer-col h4 {
+    .footer-col-brand h4 {
+      color: #ffffff !important;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .footer-col-brand p {
+      color: #e2e8f0 !important;
+      line-height: 1.6;
+      font-size: 14px;
+      max-width: 320px;
+    }
+
+    .footer-col h4.footer-col-heading {
       color: #ffffff !important;
       font-size: 14px;
       font-weight: 700;
@@ -435,27 +436,49 @@
       color: #ffffff !important;
     }
 
-    .badge-hiring {
-      background: #ffffff !important;
-      color: #0a5743 !important;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 6px;
-      margin-left: 6px;
+    .footer-governance-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: #f1f5f9 !important;
+      margin-bottom: 8px;
     }
 
-    .footer-bottom {
-      display: grid;
-      grid-template-columns: 1.5fr 1fr 1fr;
-      gap: 32px;
+    .footer-governance-badge::before {
+      content: '✓';
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.18);
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+
+    .footer-bottom-bar {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
       padding-top: 24px;
       border-top: 1px solid rgba(255, 255, 255, 0.25);
       font-size: 13px;
-      line-height: 1.6;
+      color: #e2e8f0 !important;
     }
 
-    .legal-copy {
-      color: #e2e8f0 !important;
+    /* Main content body spacing */
+    #main-dashboard-content {
+      padding-top: 0;
+    }
+
+    /* Dashboard main container spacing */
+    .dashboard-body-wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 24px;
     }
   </style>
 </head>
@@ -498,18 +521,19 @@
   <!-- DASHBOARD / MAIN CONTAINER -->
   <section id="dashboard-view" style="display:none">
     <header class="navbar">
-      <div class="nav-left">
-        <a href="#" class="brand-logo">⚡ Agentic Commerce</a>
-        <ul class="nav-links">
-          <li><a href="#" id="nav-dashboard">Dashboard</a></li>
-          <li><a href="#" id="nav-audit">Audit Logs</a></li>
-        </ul>
-      </div>
-      <div class="nav-right">
-        <span id="user-greeting" class="nav-user-badge">Logged in as: Demo User</span>
-        <button id="sign-out"
-          style="background:#ff4d4f !important; color:#fff !important; border:none; padding:10px 18px; font-size:15px; cursor:pointer; font-weight:600;">Sign
-          Out</button>
+      <div class="navbar-inner">
+        <div class="nav-left">
+          <a href="#" class="brand-logo">⚡ Agentic Commerce</a>
+          <ul class="nav-links">
+            <li><a href="#" id="nav-dashboard">Dashboard</a></li>
+            <li><a href="#" id="nav-audit">Audit Logs</a></li>
+          </ul>
+        </div>
+        <div class="nav-right">
+          <span id="user-greeting" class="nav-user-badge">Logged in as: Demo User</span>
+          <button id="sign-out"
+            style="background:#ff4d4f !important; color:#fff !important; border:none; padding:10px 18px; font-size:15px; cursor:pointer; font-weight:600; border-radius:8px;">Sign Out</button>
+        </div>
       </div>
     </header>
 
@@ -532,15 +556,15 @@
         </article>
 
         <article class="panel">
-          <h2>Spine inspector</h2>
+          <h2>Spine Inspector</h2>
           <ol id="spine-container" class="spine">
-            <li data-step="Propose"><span class="spine-copy"><strong>Propose</strong><small>Waiting for a request</small></span><b>--</b></li>
-            <li data-step="Explain"><span class="spine-copy"><strong>Explain</strong><small>Waiting for a request</small></span><b>--</b></li>
-            <li data-step="Gate"><span class="spine-copy"><strong>Gate</strong><small>Validating transaction boundaries and ₹10k ceiling</small></span><b>--</b></li>
-            <li data-step="Execute"><span class="spine-copy"><strong>Execute</strong><small>Waiting for gate approval</small></span><b>--</b></li>
-            <li data-step="Audit"><span class="spine-copy"><strong>Audit</strong><small>Waiting for an execution result</small></span><b>--</b></li>
+            <li data-step="Propose"><span class="spine-copy"><strong>① Intent &amp; Proposal</strong><small>Waiting — will parse items, quantities &amp; intent</small></span><b>--</b></li>
+            <li data-step="Explain"><span class="spine-copy"><strong>② Explainability</strong><small>Waiting — will validate availability &amp; pricing logic</small></span><b>--</b></li>
+            <li data-step="Gate"><span class="spine-copy"><strong>③ Policy Gate</strong><small>Waiting — will check spending limits (&lt;₹10k) &amp; authorization</small></span><b>--</b></li>
+            <li data-step="Execute"><span class="spine-copy"><strong>④ Execution</strong><small>Waiting — will trigger Razorpay order &amp; signature verification</small></span><b>--</b></li>
+            <li data-step="Audit"><span class="spine-copy"><strong>⑤ Audit Log</strong><small>Waiting — will write transaction record to /api/audit-log</small></span><b>--</b></li>
           </ol>
-          <p id="reasoning" class="reasoning">Ready.</p>
+          <p id="reasoning" class="reasoning">Ready — submit a request to begin the safety spine evaluation.</p>
         </article>
       </section>
     </main>
@@ -567,97 +591,62 @@
     </article>
   </div>
 
-  <!-- FOOTER -->
+  <!-- FOOTER — Unified Agentic Commerce footer (mirrors hero/src/components/Footer.tsx) -->
   <footer class="site-footer">
-    <div class="footer-top">
-      <div class="footer-brand">Checkout.com</div>
-      <div class="footer-tagline">Where the world checks out</div>
-      <div class="lang-selector">
-        <select>
-          <option>🇬🇧 Global (English)</option>
-          <option>🇮🇳 India (English)</option>
-        </select>
-      </div>
-    </div>
+    <div class="footer-inner">
+      <div class="footer-columns">
 
-    <div class="footer-grid">
-      <div class="footer-col">
-        <h4>Products</h4>
-        <ul>
-          <li><a href="#">Accept Online</a></li>
-          <li><a href="#">Flow</a></li>
-          <li><a href="#">Payouts</a></li>
-          <li><a href="#">Issuing</a></li>
-          <li><a href="#">Payment Integrations</a></li>
-          <li><a href="#">Payment Methods</a></li>
-          <li><a href="#">Fraud Detection</a></li>
-          <li><a href="#">Authentication</a></li>
-        </ul>
-      </div>
+        <!-- Col 1: Brand -->
+        <div class="footer-col footer-col-brand">
+          <h4>Agentic Commerce</h4>
+          <p>Autonomous merchant growth powered by explainable, bounded, and gated agent-to-agent transactions.</p>
+        </div>
 
-      <div class="footer-col">
-        <h4>Solutions</h4>
-        <ul>
-          <li><a href="#">Ecommerce</a></li>
-          <li><a href="#">Fintech</a></li>
-          <li><a href="#">Gaming</a></li>
-          <li><a href="#">Crypto</a></li>
-          <li><a href="#">Marketplace</a></li>
-          <li><a href="#">Travel</a></li>
-          <li><a href="#">International Coverage</a></li>
-        </ul>
-      </div>
+        <!-- Col 2: Product Links -->
+        <div class="footer-col">
+          <h4 class="footer-col-heading">Product</h4>
+          <ul>
+            <li><a href="#">Catalog</a></li>
+            <li><a href="#">Agent Flow</a></li>
+            <li><a href="#">Razorpay Integration</a></li>
+            <li><a href="#">Audit Trail</a></li>
+            <li><a href="#">Docs</a></li>
+          </ul>
+        </div>
 
-      <div class="footer-col">
-        <h4>Company</h4>
-        <ul>
-          <li><a href="#">Our mission</a></li>
-          <li><a href="#">Our customers</a></li>
-          <li><a href="#">Leadership</a></li>
-          <li><a href="#">Contact us</a></li>
-          <li><a href="#">Careers <span class="badge-hiring">HIRING</span></a></li>
-          <li><a href="#">Early Careers #NextGen</a></li>
-          <li><a href="#">Life at Checkout</a></li>
-        </ul>
+        <!-- Col 3: Architecture -->
+        <div class="footer-col">
+          <h4 class="footer-col-heading">Architecture</h4>
+          <ul>
+            <li><a href="#">Razorpay Test APIs</a></li>
+            <li><a href="#">Spine Inspector</a></li>
+            <li><a href="#">Audit Trail</a></li>
+            <li><a href="#">NPCI UAP Standard</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Governance Badges -->
+        <div class="footer-col">
+          <h4 class="footer-col-heading">Governance</h4>
+          <ul>
+            <li>
+              <a href="#" class="footer-governance-badge">Spending Limits (&lt; ₹10k)</a>
+            </li>
+            <li>
+              <a href="#" class="footer-governance-badge">Signature Verification</a>
+            </li>
+            <li>
+              <a href="#" class="footer-governance-badge">Explainability Logs</a>
+            </li>
+          </ul>
+        </div>
+
       </div>
 
-      <div class="footer-col">
-        <h4>Documentation & Resources</h4>
-        <ul>
-          <li><a href="#">For developers</a></li>
-          <li><a href="#">API reference</a></li>
-          <li><a href="#">Test account</a></li>
-          <li><a href="#">Trust center</a></li>
-          <li><a href="#">Blog</a></li>
-          <li><a href="#">Case studies</a></li>
-          <li><a href="#">Support</a></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="footer-bottom">
-      <div class="legal-copy">
-        <p><strong>© 2026 Checkout.com</strong></p>
-        <p style="margin-top: 8px;">
-          Checkout.com or its affiliates provide services under a license or registration in various jurisdictions.
-          Money transmission services in the U.S. provided by Checkout US Inc. (NMLS # 1791692). For details please
-          visit our Regulatory page.
-        </p>
-      </div>
-
-      <div>
-        <p><a href="#" style="color:#f1f5f9 !important; text-decoration:none;">Terms & policies</a></p>
-        <p><a href="#" style="color:#f1f5f9 !important; text-decoration:none;">Service terms</a></p>
-        <p><a href="#" style="color:#f1f5f9 !important; text-decoration:none;">Country terms</a></p>
-        <p><a href="#" style="color:#f1f5f9 !important; text-decoration:none;">Privacy notice</a></p>
-        <p><a href="#" style="color:#f1f5f9 !important; text-decoration:none;">Regulatory</a></p>
-        <p><a href="#" style="color:#f1f5f9 !important; text-decoration:none;">Cookies Settings</a></p>
-      </div>
-
-      <div>
-        <p><a href="#" style="color:#f1f5f9 !important; text-decoration:none;">Modern slavery statement</a></p>
-        <p><a href="#" style="color:#f1f5f9 !important; text-decoration:none;">Supplier code of conduct</a></p>
-        <p><a href="#" style="color:#f1f5f9 !important; text-decoration:none;">Accessibility statement</a></p>
+      <!-- Bottom bar -->
+      <div class="footer-bottom-bar">
+        <p><strong>© 2026 Agentic Commerce</strong></p>
+        <p>Powered by Razorpay Test Mode &amp; Explainable AI</p>
       </div>
     </div>
   </footer>
