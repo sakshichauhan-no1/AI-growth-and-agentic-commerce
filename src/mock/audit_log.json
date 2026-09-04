@@ -3303,5 +3303,77 @@
     "basePaise": 349900,
     "gstPaise": 62982,
     "amountPaise": 412882
+  },
+  {
+    "actionId": "action_1788509425299_d6a7b3",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T08:10:25.301Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T08:10:25.300Z"
+    },
+    "status": "cart-add",
+    "itemName": "Mouse Pad",
+    "itemPrice": "₹199",
+    "quantity": 1,
+    "basePaise": 19900,
+    "gstPaise": 3582,
+    "amountPaise": 23482
+  },
+  {
+    "actionId": "checkout_1788509428933_ce4d7e",
+    "actionType": "CART_CHECKOUT",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T08:10:28.934Z",
+    "status": "paid",
+    "cartItems": [
+      {
+        "productId": "sku_pad",
+        "name": "Mouse Pad",
+        "quantity": 1,
+        "totalPaise": 23482
+      }
+    ],
+    "amountPaise": 23482,
+    "order": {
+      "id": "order_TXtAfiiA1jCRBf"
+    },
+    "paidAt": "2026-09-04T08:11:27.825Z",
+    "paymentId": "pay_TXtBMn4bECUn8V"
+  },
+  {
+    "actionId": "action_1788509628737_174c70",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T08:13:48.737Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T08:13:48.737Z"
+    },
+    "status": "cart-add",
+    "itemName": "USB-C Cable",
+    "itemPrice": "₹299",
+    "quantity": 1,
+    "basePaise": 29900,
+    "gstPaise": 5382,
+    "amountPaise": 35282
   }
 ]
