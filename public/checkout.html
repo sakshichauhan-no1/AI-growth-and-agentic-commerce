@@ -7,10 +7,10 @@
   <title>Agentic Checkout</title>
   <meta name="description" content="Agentic Checkout — safe autonomous commerce with a full audit spine.">
 
-  <!-- Font Imports: Playfair Display for Hero Heading -->
+  <!-- Font Imports -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap"
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
     rel="stylesheet">
 
   <link rel="stylesheet" href="/style.css">
@@ -295,76 +295,129 @@
       padding: 12px 16px;
     }
 
-    /* --- NAVBAR STYLES (#0a5743) --- */
+    /* --- NAVBAR STYLES (Hero-matched glassmorphic) --- */
     header.navbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #0a5743 !important;
-      padding: 20px 0;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(13, 26, 21, 0.08);
       margin-bottom: 0;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      color: #ffffff !important;
     }
 
     header.navbar .navbar-inner {
       max-width: 1280px;
       margin: 0 auto;
-      padding: 0 24px;
+      padding: 0 32px;
       width: 100%;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      height: 68px;
+      box-sizing: border-box;
     }
 
-    .nav-left {
-      display: flex;
-      align-items: center;
-      gap: 28px;
-    }
-
+    /* Brand logo */
     .brand-logo {
-      font-size: 22px;
-      font-weight: 800;
-      color: #ffffff !important;
-      text-decoration: none;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      text-decoration: none;
+      flex-shrink: 0;
     }
 
+    .brand-logo-text {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: #0d1a15;
+      letter-spacing: -0.01em;
+    }
+
+    /* Desktop nav links */
     .nav-links {
       display: flex;
-      gap: 20px;
+      gap: 28px;
       list-style: none;
       padding: 0;
       margin: 0;
+      align-items: center;
     }
 
     .nav-links a {
-      color: #f1f5f9 !important;
+      font-family: 'Space Grotesk', sans-serif;
+      color: #0d1a15;
       text-decoration: none;
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 500;
-      transition: color 0.2s;
+      opacity: 0.72;
+      transition: opacity 0.2s ease;
     }
 
     .nav-links a:hover {
-      color: #ffffff !important;
+      opacity: 1;
     }
 
+    /* Right side action buttons */
     .nav-right {
       display: flex;
       align-items: center;
-      gap: 18px;
+      gap: 10px;
     }
 
+    .nav-btn-demo {
+      font-family: 'Space Grotesk', sans-serif;
+      background: #0a5743;
+      color: #ffffff;
+      border: none;
+      border-radius: 50px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .nav-btn-demo:hover {
+      transform: scale(1.03);
+      box-shadow: 0 4px 14px rgba(10, 87, 67, 0.28);
+    }
+
+    .nav-btn-signin {
+      font-family: 'Space Grotesk', sans-serif;
+      background: #F2F2EE;
+      color: #0d1a15;
+      border: none;
+      border-radius: 50px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .nav-btn-signin:hover {
+      transform: scale(1.03);
+    }
+
+    /* User pill shown after login */
     .nav-user-badge {
-      font-size: 15px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
       font-weight: 500;
-      color: #ffffff !important;
-      background: rgba(255, 255, 255, 0.18) !important;
-      padding: 8px 14px;
+      color: #0d1a15;
+      background: #F2F2EE;
+      padding: 6px 14px;
+      border-radius: 50px;
     }
 
     /* --- FOOTER STYLES (Agentic Commerce — matches hero Footer.tsx) --- */
@@ -520,19 +573,30 @@
 
   <!-- DASHBOARD / MAIN CONTAINER -->
   <section id="dashboard-view" style="display:none">
-    <header class="navbar">
+    <header class="navbar" role="banner">
       <div class="navbar-inner">
-        <div class="nav-left">
-          <a href="#" class="brand-logo">⚡ Agentic Commerce</a>
-          <ul class="nav-links">
-            <li><a href="#" id="nav-dashboard">Dashboard</a></li>
-            <li><a href="#" id="nav-audit">Audit Logs</a></li>
-          </ul>
-        </div>
+        <!-- Brand Logo -->
+        <a href="#" class="brand-logo" aria-label="Agentic Commerce home">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" overflow="visible" viewBox="0 0 256 256" aria-hidden="true">
+            <path d="M 64 128 L 64.5 128 L 32 95 L 0 64 L 0 0 L 64 0 L 128 64 L 128 64.5 L 161 32 L 192 0 L 256 0 L 256 64 L 192 128 L 128 128 L 128 192 L 96 223 L 63.5 256 L 0 256 L 0 192 Z M 256 192 L 224 223 L 191.5 256 L 128 256 L 128 192 L 192 128 L 256 128 Z" fill="#0a5743"/>
+          </svg>
+          <span class="brand-logo-text">Agentic Commerce</span>
+        </a>
+
+        <!-- Center Nav Links -->
+        <ul class="nav-links" aria-label="Site navigation">
+          <li><a href="#" id="nav-catalog">Catalog</a></li>
+          <li><a href="#" id="nav-agent-flow">Agent Flow</a></li>
+          <li><a href="#" id="nav-razorpay">Razorpay Integration</a></li>
+          <li><a href="#" id="nav-audit">Audit Trail</a></li>
+          <li><a href="#" id="nav-docs">Docs</a></li>
+        </ul>
+
+        <!-- Right Side: user info + sign out -->
         <div class="nav-right">
-          <span id="user-greeting" class="nav-user-badge">Logged in as: Demo User</span>
-          <button id="sign-out"
-            style="background:#ff4d4f !important; color:#fff !important; border:none; padding:10px 18px; font-size:15px; cursor:pointer; font-weight:600; border-radius:8px;">Sign Out</button>
+          <span id="user-greeting" class="nav-user-badge">Demo User</span>
+          <button id="nav-dashboard" class="nav-btn-demo" type="button">Dashboard</button>
+          <button id="sign-out" class="nav-btn-signin" type="button">Sign Out</button>
         </div>
       </div>
     </header>
