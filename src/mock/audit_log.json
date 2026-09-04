@@ -4103,5 +4103,51 @@
     },
     "cancelledAt": "2026-09-04T18:09:13.502Z",
     "error": "Payment window closed by the customer."
+  },
+  {
+    "actionId": "action_1788547832090_c94aa3",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T18:50:32.091Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T18:50:32.091Z"
+    },
+    "status": "cart-add",
+    "itemName": "USB-C Cable",
+    "itemPrice": "₹299",
+    "quantity": 1,
+    "basePaise": 29900,
+    "gstPaise": 5382,
+    "amountPaise": 35282
+  },
+  {
+    "actionId": "action_1788547854041_e63918",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T18:50:54.041Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T18:50:54.041Z"
+    },
+    "status": "cart-add",
+    "itemName": "USB-C Cable",
+    "itemPrice": "₹299",
+    "quantity": 1,
+    "basePaise": 29900,
+    "gstPaise": 5382,
+    "amountPaise": 35282
   }
 ]
