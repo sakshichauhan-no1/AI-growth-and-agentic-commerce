@@ -137,7 +137,8 @@ h1,h2,h3,h4{color:var(--ink);letter-spacing:-.02em}
 .panel h2{font-weight:750;color:var(--ink)}
 .transaction-amount{font-variant-numeric:tabular-nums}
 .transaction-amount strong,.receipt-total strong{font-weight:800}
-.receipt-card,.history-panel,.workspace .panel{box-shadow:0 4px 6px -1px rgba(15,23,42,.10),0 16px 30px rgba(15,23,42,.06)}
+.receipt-card,.history-panel{box-shadow:0 4px 6px -1px rgba(15,23,42,.10),0 16px 30px rgba(15,23,42,.06)}
+.workspace .panel{box-shadow:0 25px 50px -12px rgba(0,0,0,.25)!important}
 .suggestion-pill{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;box-shadow:0 1px 2px rgba(15,23,42,.04)}
 .composer input{box-shadow:0 1px 2px rgba(15,23,42,.03)}
 footer.site-footer{position:static!important;inset:auto!important;transform:none!important;box-shadow:0 -1px 0 rgba(219,229,223,.8)}
