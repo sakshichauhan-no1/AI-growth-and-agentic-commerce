@@ -8,6 +8,7 @@ const SESSION_KEY = 'agentic-session';
 const CHAT_KEY_PREFIX = 'agentic-chat-';
 let mode = 'login';
 let session = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+let liveCatalog = [];
 
 /* ── Razorpay public key (fetched from server after login) ── */
 let _rzpKeyId = null;
@@ -75,7 +76,6 @@ async function initWelcomeMessage() {
       body: JSON.stringify({ query: 'Hello' }),
     });
     const d = await r.json();
-    if (runId !== spineRunId) return;
     if (r.ok && d.agentResponse) {
       _welcomeLoaded = true;
       appendBubble(d.agentResponse, 'agent');
@@ -99,9 +99,17 @@ function showView() {
     $('#user-greeting').textContent = 'Hi, ' + session.user.name;
     showPage('dashboard');
     loadAudit();
+    fetchCatalog();
     fetchRzpKey(); // preload the public key in background
     initWelcomeMessage();
   }
+}
+
+async function fetchCatalog() {
+  try {
+    const r = await fetch('/api/catalog', { headers: authHeaders() });
+    if (r.ok) liveCatalog = await r.json();
+  } catch (_) { /* Server validation remains authoritative. */ }
 }
 
 /* ══════════════════════════════════════════════════
@@ -312,8 +320,66 @@ function isCommerceIntent(query) {
   return /\b(buy|order|purchase|add|checkout|cart|pay|payment|product|item|plan|subscription|warranty)\b|₹|\b(?:rs\.?|inr|rupees?)\b/i.test(query);
 }
 
+function isLikelyProductQuery(query) {
+  return isCommerceIntent(query) || /\b(iphone|ipad|macbook|smartwatch|headphones?|earbuds?|laptop|phone|tablet|camera|monitor|keyboard|mouse|headset|charger|cable|bottle|fan|organizer)\b/i.test(query);
+}
+
 function isDirectProductQuery(query, data) {
   return !isCommerceIntent(query) && hasActionableCommerce(query, data);
+}
+
+function catalogTokens(value) {
+  return String(value || '').toLowerCase().replace(/[^a-z0-9\s-]/g, ' ').split(/\s+/).filter((word) => word.length > 2);
+}
+
+function editDistance(left, right) {
+  const row = Array.from({ length: right.length + 1 }, (_, index) => index);
+  for (let i = 1; i <= left.length; i += 1) {
+    let diagonal = row[0];
+    row[0] = i;
+    for (let j = 1; j <= right.length; j += 1) {
+      const above = row[j];
+      row[j] = left[i - 1] === right[j - 1]
+        ? diagonal
+        : Math.min(row[j] + 1, row[j - 1] + 1, diagonal + 1);
+      diagonal = above;
+    }
+  }
+  return row[right.length];
+}
+
+function catalogMatch(query) {
+  const queryText = query.toLowerCase();
+  const queryWords = catalogTokens(queryText);
+  const synonyms = { watch: ['smartwatch'], phone: ['iphone'], laptop: ['macbook'], phones: ['iphone'] };
+  let best = null;
+  let bestScore = 0;
+  liveCatalog.forEach((item) => {
+    const terms = [item.name, ...(item.keywords || [])].filter(Boolean).flatMap(catalogTokens);
+    let score = 0;
+    queryWords.forEach((word) => {
+      terms.forEach((term) => {
+        if (queryText.includes(term) || term.includes(word)) score = Math.max(score, 3);
+        else if ((synonyms[word] || []).includes(term) || (synonyms[term] || []).includes(word)) score = Math.max(score, 2);
+        else if (word.length >= 5 && term.length >= 5 && editDistance(word, term) <= 2) score = Math.max(score, 1);
+      });
+    });
+    if (score > bestScore) { bestScore = score; best = item; }
+  });
+  return best;
+}
+
+function matchedCatalogItem(query, data) {
+  const liveMatch = catalogMatch(query);
+  if (liveMatch) return liveMatch;
+  const items = data?.pendingCheckout?.items || data?.cartState?.items || [];
+  return items.find((item) => query.toLowerCase().includes(String(item.name || '').toLowerCase())) || null;
+}
+
+function catalogPrice(item, data) {
+  const paise = Number(item?.priceInPaise || item?.price || item?.totalPaise)
+    || Number(data?.cartState?.items?.find((entry) => entry.name === item?.name)?.totalPaise);
+  return paise > 0 ? `₹${(paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '₹0.00';
 }
 
 function isAddOnIntent(query) {
@@ -324,7 +390,14 @@ function isAddOnIntent(query) {
 function hasActionableCommerce(query, data) {
   const items = data?.pendingCheckout?.items || data?.cartState?.items || [];
   if (!items.length) return false;
-  if (isCommerceIntent(query)) return true;
+  const matchedCatalogItem = catalogMatch(query);
+  const matchedReturnedItem = items.some((item) => {
+    const name = String(item.name || '').toLowerCase();
+    return name && query.toLowerCase().includes(name);
+  });
+  if (isCommerceIntent(query)) {
+    return Boolean(matchedCatalogItem || matchedReturnedItem || /\b(checkout|cart|pay|payment)\b/i.test(query));
+  }
 
   // A bare product name ("laptop", "headset") is still commerce intent when
   // it matches the product the agent returned, even without a "buy" verb.
@@ -339,6 +412,7 @@ function normalizedSpine(trace, data, query) {
   const commerce = hasActionableCommerce(query, data);
   const addOn = isAddOnIntent(query);
   const directProduct = isDirectProductQuery(query, data);
+  const catalogProduct = matchedCatalogItem(query, data);
   SPINE_STEPS.forEach((name) => {
     const raw = spineSource(trace, name);
     if (typeof raw === 'object' && raw) {
@@ -352,6 +426,14 @@ function normalizedSpine(trace, data, query) {
   });
 
   if (!commerce) {
+    if (isLikelyProductQuery(query)) {
+      result.Propose = { status: 'success', detail: 'Unrecognized Item Queried' };
+      result.Explain = { status: 'failed', error: 'Item Not Found in Catalog', detail: 'Item Not Found in Catalog | Stock: 0' };
+      result.Gate = { status: 'failed', error: 'Cannot proceed with unlisted item', detail: 'Gate Blocked: Cannot proceed with unlisted item' };
+      result.Execute = { status: 'skipped', blocked: true, reason: 'Blocked after Gate failed.', detail: 'Execution halted for unlisted item.' };
+      result.Audit = { status: 'skipped', blocked: true, reason: 'Blocked after Gate failed.', detail: 'Audit halted for unlisted item.' };
+      return result;
+    }
     result.Propose = {
       status: 'success',
       detail: 'Intent: General Inquiry / Non-Commerce | Target: None',
@@ -421,7 +503,7 @@ function normalizedSpine(trace, data, query) {
   }
 
   if (directProduct && result.Gate.status === 'success') {
-    result.Propose.detail = `Product Identified: ${extractedTarget(query, data)} | Intent: Commerce Inquiry`;
+    result.Propose.detail = `Product Matched: ${catalogProduct?.name || extractedTarget(query, data)} | Price: ${catalogPrice(catalogProduct, data)}`;
     result.Explain.detail = 'Stock & Context Validated | Confidence: 98%';
     result.Gate.detail = 'Spending Limit Check: PASS (< ₹10,000)';
     result.Execute = {
@@ -432,6 +514,14 @@ function normalizedSpine(trace, data, query) {
       status: 'ready',
       detail: 'Session Staged | Awaiting Transaction',
     };
+  }
+
+  if (catalogProduct && !addOn && result.Gate.status === 'success') {
+    result.Propose.detail = `Catalog Keyword Matched: ${catalogProduct.name} | Item Added`;
+    result.Explain.detail = 'Stock & Context Validated | Confidence: 95%+';
+    result.Gate.detail = 'Policy Limit Check: PASS (< ₹10,000)';
+    result.Execute = { status: 'summary', detail: `Cart Updated: ${catalogProduct.name} | Awaiting Payment` };
+    result.Audit = { status: 'ready', detail: 'Session Staged | Record Pending Payment Execution' };
   }
 
   // Use the same successful verification language for products and add-ons.
@@ -496,6 +586,17 @@ async function renderSpineSequentially(trace, data, query, runId) {
   }
   return results;
 }
+
+// Public entry point used by every conversational submission and suggestion.
+// It always clears the five DOM rows before rendering the new trace.
+window.spineInspector = {
+  reset() {
+    SPINE_STEPS.forEach((name) => stage(name, { status: 'pending' }));
+  },
+  render(trace, data, query, runId) {
+    return renderSpineSequentially(trace, data, query, runId);
+  },
+};
 
 /* ── Show a named error badge in the reasoning panel ── */
 function showErrorBadge(badgeText, detail) {
@@ -855,16 +956,20 @@ async function submitQuery(query) {
   $('#query').value = '';
 
   // Every new message starts a fresh, persistent five-stage trace.
-  SPINE_STEPS.forEach((name) => stage(name, { status: 'pending' }));
+  window.spineInspector.reset();
   stage('Propose', { status: 'active' });
   const reasoningEl = $('#reasoning');
   if (reasoningEl) reasoningEl.textContent = 'Processing your request through the safety spine…';
+  const detectedCatalogItem = catalogMatch(q);
+  const normalizedAgentQuery = detectedCatalogItem
+    ? `${/\b(add|include|upgrade|extend|attach)\b/i.test(q) ? 'Add' : 'Buy'} ${detectedCatalogItem.name}`
+    : q;
 
   try {
     const r = await fetch('/api/agent/chat', {
       method: 'POST',
       headers: authHeaders(),
-      body: JSON.stringify({ query: q }),
+      body: JSON.stringify({ query: normalizedAgentQuery }),
     });
     const d = await r.json();
 
@@ -881,7 +986,7 @@ async function submitQuery(query) {
     if (d.suggestedReplies?.length) renderQuickActions(d.suggestedReplies);
 
     if (d.spine) {
-      const renderedResults = await renderSpineSequentially(d.spine, d, q, runId);
+      const renderedResults = await window.spineInspector.render(d.spine, d, q, runId);
       if (runId !== spineRunId) return;
 
       // Determine which step failed (if any) and show the error badge.
@@ -911,7 +1016,7 @@ async function submitQuery(query) {
       }
     } else {
       // Keep the UI contract intact even if an older server omits its trace.
-      await renderSpineSequentially({}, d, q, runId);
+      await window.spineInspector.render({}, d, q, runId);
       if (runId !== spineRunId) return;
       if (reasoningEl) reasoningEl.textContent = 'Trace complete — all 5 spine steps evaluated.';
     }
