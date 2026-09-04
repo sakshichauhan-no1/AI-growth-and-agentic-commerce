@@ -2715,7 +2715,10 @@
       "id": "order_TXdPOD9kfYpd0G"
     },
     "failedAt": "2026-09-03T16:46:44.265Z",
-    "error": "Payment failed"
+    "error": "Payment failed",
+    "retryResolved": true,
+    "resolvedByOrderId": "order_TY36UMFWQLDPO4",
+    "resolvedAt": "2026-09-04T17:54:12.627Z"
   },
   {
     "actionId": "action_1788454479110_84cdda",
@@ -3071,8 +3074,8 @@
     "failedAt": "2026-09-03T17:24:53.201Z",
     "error": "Payment failed",
     "retryResolved": true,
-    "resolvedByOrderId": "order_TXekb4nUyntpjr",
-    "resolvedAt": "2026-09-03T18:06:37.983Z"
+    "resolvedByOrderId": "order_TY2neROXPsOSOV",
+    "resolvedAt": "2026-09-04T17:36:31.643Z"
   },
   {
     "actionId": "payment_1788456317475",
@@ -3173,8 +3176,8 @@
     "failedAt": "2026-09-03T18:05:40.532Z",
     "error": "International cards are not supported. Please contact our support team for help",
     "retryResolved": true,
-    "resolvedByOrderId": "order_TXekb4nUyntpjr",
-    "resolvedAt": "2026-09-03T18:06:37.983Z"
+    "resolvedByOrderId": "order_TY2neROXPsOSOV",
+    "resolvedAt": "2026-09-04T17:36:31.643Z"
   },
   {
     "actionId": "payment_1788458797982",
@@ -3452,6 +3455,653 @@
       "id": "order_TXuz4jD4BP8CMr"
     },
     "cancelledAt": "2026-09-04T09:57:19.546Z",
+    "error": "Payment window closed by the customer."
+  },
+  {
+    "actionId": "action_1788543334286_42877d",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T17:35:34.287Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T17:35:34.287Z"
+    },
+    "status": "cart-add",
+    "itemName": "USB-C Cable",
+    "itemPrice": "₹299",
+    "quantity": 1,
+    "basePaise": 29900,
+    "gstPaise": 5382,
+    "amountPaise": 35282
+  },
+  {
+    "actionId": "checkout_1788543337031_78c085",
+    "actionType": "CART_CHECKOUT",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T17:35:37.031Z",
+    "status": "paid",
+    "cartItems": [
+      {
+        "productId": "sku_cable",
+        "name": "USB-C Cable",
+        "quantity": 1,
+        "totalPaise": 35282
+      }
+    ],
+    "amountPaise": 35282,
+    "order": {
+      "id": "order_TY2neROXPsOSOV"
+    },
+    "paidAt": "2026-09-04T17:36:31.641Z",
+    "paymentId": "pay_TY2oIBa4tDL9tz"
+  },
+  {
+    "actionId": "action_1788543924421_364b46",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T17:45:24.421Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T17:45:24.421Z"
+    },
+    "status": "cart-add",
+    "itemName": "USB-C Cable",
+    "itemPrice": "₹299",
+    "quantity": 1,
+    "basePaise": 29900,
+    "gstPaise": 5382,
+    "amountPaise": 35282
+  },
+  {
+    "actionId": "action_1788543941717_1a6c0e",
+    "actionType": "UPSELL",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T17:45:41.717Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T17:45:41.717Z"
+    },
+    "status": "cart-add",
+    "itemName": "Extended Warranty",
+    "itemPrice": "₹499",
+    "quantity": 1,
+    "basePaise": 49900,
+    "gstPaise": 8982,
+    "amountPaise": 58882
+  },
+  {
+    "actionId": "checkout_1788543947839_b2c07f",
+    "actionType": "CART_CHECKOUT",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T17:45:47.839Z",
+    "status": "paid",
+    "cartItems": [
+      {
+        "productId": "sku_cable",
+        "name": "USB-C Cable",
+        "quantity": 1,
+        "totalPaise": 35282
+      },
+      {
+        "productId": "sku_warranty",
+        "name": "Extended Warranty",
+        "quantity": 1,
+        "totalPaise": 58882
+      }
+    ],
+    "amountPaise": 94164,
+    "order": {
+      "id": "order_TY2yPC6Os4mBHE"
+    },
+    "paidAt": "2026-09-04T17:46:39.467Z",
+    "paymentId": "pay_TY2z015BFQw87J"
+  },
+  {
+    "actionId": "action_1788544340406_c9469a",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T17:52:20.406Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T17:52:20.406Z"
+    },
+    "status": "cart-add",
+    "itemName": "Mouse Pad",
+    "itemPrice": "₹199",
+    "quantity": 1,
+    "basePaise": 19900,
+    "gstPaise": 3582,
+    "amountPaise": 23482
+  },
+  {
+    "actionId": "action_1788544354770_6ed616",
+    "actionType": "UPSELL",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T17:52:34.771Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T17:52:34.771Z"
+    },
+    "status": "cart-add",
+    "itemName": "Extended Warranty",
+    "itemPrice": "₹499",
+    "quantity": 1,
+    "basePaise": 49900,
+    "gstPaise": 8982,
+    "amountPaise": 58882
+  },
+  {
+    "actionId": "action_1788544404137_89ca62",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T17:53:24.137Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T17:53:24.137Z"
+    },
+    "status": "cart-add",
+    "itemName": "Wireless Mouse",
+    "itemPrice": "₹1,299",
+    "quantity": 1,
+    "basePaise": 129900,
+    "gstPaise": 23382,
+    "amountPaise": 153282
+  },
+  {
+    "actionId": "checkout_1788544406971_c2998e",
+    "actionType": "CART_CHECKOUT",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T17:53:26.971Z",
+    "status": "paid",
+    "cartItems": [
+      {
+        "productId": "sku_mouse",
+        "name": "Wireless Mouse",
+        "quantity": 1,
+        "totalPaise": 153282
+      }
+    ],
+    "amountPaise": 153282,
+    "order": {
+      "id": "order_TY36UMFWQLDPO4"
+    },
+    "paidAt": "2026-09-04T17:54:12.627Z",
+    "paymentId": "pay_TY36yeyufwS6Ho"
+  },
+  {
+    "actionId": "action_1788544466040_ccbe2f",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T17:54:26.040Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T17:54:26.040Z"
+    },
+    "status": "cart-add",
+    "itemName": "Mechanical Keyboard",
+    "itemPrice": "₹3,499",
+    "quantity": 1,
+    "basePaise": 349900,
+    "gstPaise": 62982,
+    "amountPaise": 412882
+  },
+  {
+    "actionId": "checkout_1788544468549_c16415",
+    "actionType": "CART_CHECKOUT",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T17:54:28.549Z",
+    "status": "cancelled",
+    "cartItems": [
+      {
+        "productId": "sku_keyboard",
+        "name": "Mechanical Keyboard",
+        "quantity": 1,
+        "totalPaise": 412882
+      }
+    ],
+    "amountPaise": 412882,
+    "order": {
+      "id": "order_TY37ZZoI4dBEja"
+    },
+    "cancelledAt": "2026-09-04T17:54:35.785Z",
+    "error": "Payment window closed by the customer."
+  },
+  {
+    "actionId": "checkout_1788544487604_4c88b8",
+    "actionType": "CART_CHECKOUT",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T17:54:47.604Z",
+    "status": "cancelled",
+    "cartItems": [
+      {
+        "productId": "sku_keyboard",
+        "name": "Mechanical Keyboard",
+        "quantity": 1,
+        "totalPaise": 412882
+      }
+    ],
+    "amountPaise": 412882,
+    "order": {
+      "id": "order_TY37uNdd4QKg5L"
+    },
+    "cancelledAt": "2026-09-04T17:55:02.114Z",
+    "error": "Payment window closed by the customer."
+  },
+  {
+    "actionId": "action_1788544518802_4dc135",
+    "actionType": "UPSELL",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T17:55:18.802Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T17:55:18.802Z"
+    },
+    "status": "cart-add",
+    "itemName": "Extended Warranty",
+    "itemPrice": "₹499",
+    "quantity": 1,
+    "basePaise": 49900,
+    "gstPaise": 8982,
+    "amountPaise": 58882
+  },
+  {
+    "actionId": "action_1788544849518_71241c",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T18:00:49.518Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T18:00:49.518Z"
+    },
+    "status": "cart-add",
+    "itemName": "Wireless Mouse",
+    "itemPrice": "₹1,299",
+    "quantity": 1,
+    "basePaise": 129900,
+    "gstPaise": 23382,
+    "amountPaise": 153282
+  },
+  {
+    "actionId": "action_1788544858915_29dcf8",
+    "actionType": "UPSELL",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T18:00:58.915Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T18:00:58.915Z"
+    },
+    "status": "cart-add",
+    "itemName": "Extended Warranty",
+    "itemPrice": "₹499",
+    "quantity": 1,
+    "basePaise": 49900,
+    "gstPaise": 8982,
+    "amountPaise": 58882
+  },
+  {
+    "actionId": "action_1788544870829_2ba0e6",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T18:01:10.830Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T18:01:10.829Z"
+    },
+    "status": "cart-add",
+    "itemName": "USB-C Cable",
+    "itemPrice": "₹299",
+    "quantity": 1,
+    "basePaise": 29900,
+    "gstPaise": 5382,
+    "amountPaise": 35282
+  },
+  {
+    "actionId": "checkout_1788544965501_2b90dc",
+    "actionType": "CART_CHECKOUT",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T18:02:45.501Z",
+    "status": "paid",
+    "cartItems": [
+      {
+        "productId": "sku_mouse",
+        "name": "Wireless Mouse",
+        "quantity": 1,
+        "totalPaise": 153282
+      },
+      {
+        "productId": "sku_warranty",
+        "name": "Extended Warranty",
+        "quantity": 2,
+        "totalPaise": 117764
+      },
+      {
+        "productId": "sku_cable",
+        "name": "USB-C Cable",
+        "quantity": 1,
+        "totalPaise": 35282
+      }
+    ],
+    "amountPaise": 306328,
+    "order": {
+      "id": "order_TY3GK1YYhGZvu7"
+    },
+    "paidAt": "2026-09-04T18:03:37.850Z",
+    "paymentId": "pay_TY3GvaZ0BL5wk7"
+  },
+  {
+    "actionId": "action_1788545048615_9c2925",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T18:04:08.615Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T18:04:08.615Z"
+    },
+    "status": "cart-add",
+    "itemName": "Mechanical Keyboard",
+    "itemPrice": "₹3,499",
+    "quantity": 1,
+    "basePaise": 349900,
+    "gstPaise": 62982,
+    "amountPaise": 412882
+  },
+  {
+    "actionId": "action_1788545052812_b01a7e",
+    "actionType": "UPSELL",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T18:04:12.812Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T18:04:12.812Z"
+    },
+    "status": "cart-add",
+    "itemName": "Extended Warranty",
+    "itemPrice": "₹499",
+    "quantity": 1,
+    "basePaise": 49900,
+    "gstPaise": 8982,
+    "amountPaise": 58882
+  },
+  {
+    "actionId": "checkout_1788545059752_977401",
+    "actionType": "CART_CHECKOUT",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T18:04:19.752Z",
+    "status": "cancelled",
+    "cartItems": [
+      {
+        "productId": "sku_keyboard",
+        "name": "Mechanical Keyboard",
+        "quantity": 1,
+        "totalPaise": 412882
+      },
+      {
+        "productId": "sku_warranty",
+        "name": "Extended Warranty",
+        "quantity": 1,
+        "totalPaise": 58882
+      }
+    ],
+    "amountPaise": 471764,
+    "order": {
+      "id": "order_TY3HyuOa3zdTXB"
+    },
+    "cancelledAt": "2026-09-04T18:04:27.699Z",
+    "error": "Payment window closed by the customer.",
+    "retryResolved": true,
+    "resolvedByOrderId": "order_TY3KukWILa2IM4",
+    "resolvedAt": "2026-09-04T18:07:57.709Z"
+  },
+  {
+    "actionId": "checkout_1788545226342_544b06",
+    "actionType": "CART_CHECKOUT",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T18:07:06.342Z",
+    "status": "paid",
+    "cartItems": [
+      {
+        "productId": "sku_keyboard",
+        "name": "Mechanical Keyboard",
+        "quantity": 1,
+        "totalPaise": 412882
+      },
+      {
+        "productId": "sku_warranty",
+        "name": "Extended Warranty",
+        "quantity": 1,
+        "totalPaise": 58882
+      }
+    ],
+    "amountPaise": 471764,
+    "order": {
+      "id": "order_TY3KukWILa2IM4"
+    },
+    "paidAt": "2026-09-04T18:07:57.709Z",
+    "paymentId": "pay_TY3LV9qXKYLTA4"
+  },
+  {
+    "actionId": "action_1788545287573_d040e6",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T18:08:07.573Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T18:08:07.573Z"
+    },
+    "status": "cart-add",
+    "itemName": "Gaming Headset",
+    "itemPrice": "₹2,499",
+    "quantity": 1,
+    "basePaise": 249900,
+    "gstPaise": 44982,
+    "amountPaise": 294882
+  },
+  {
+    "actionId": "action_1788545303275_a8b5a8",
+    "actionType": "CREATE_ORDER",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T18:08:23.275Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T18:08:23.275Z"
+    },
+    "status": "cart-add",
+    "itemName": "USB-C Cable",
+    "itemPrice": "₹299",
+    "quantity": 1,
+    "basePaise": 29900,
+    "gstPaise": 5382,
+    "amountPaise": 35282
+  },
+  {
+    "actionId": "action_1788545343032_424d06",
+    "actionType": "UPSELL",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T18:09:03.032Z",
+    "gate": {
+      "approved": true,
+      "reasons": [],
+      "decidedAt": "2026-09-04T18:09:03.032Z"
+    },
+    "status": "cart-add",
+    "itemName": "Extended Warranty",
+    "itemPrice": "₹499",
+    "quantity": 2,
+    "basePaise": 99800,
+    "gstPaise": 17964,
+    "amountPaise": 117764
+  },
+  {
+    "actionId": "checkout_1788545347665_4aa2d5",
+    "actionType": "CART_CHECKOUT",
+    "userId": "user_demo",
+    "user": {
+      "id": "user_demo",
+      "name": "Demo User",
+      "email": "demo@example.com"
+    },
+    "executedAt": "2026-09-04T18:09:07.665Z",
+    "status": "cancelled",
+    "cartItems": [
+      {
+        "productId": "sku_headset",
+        "name": "Gaming Headset",
+        "quantity": 1,
+        "totalPaise": 294882
+      },
+      {
+        "productId": "sku_cable",
+        "name": "USB-C Cable",
+        "quantity": 1,
+        "totalPaise": 35282
+      },
+      {
+        "productId": "sku_warranty",
+        "name": "Extended Warranty",
+        "quantity": 2,
+        "totalPaise": 117764
+      }
+    ],
+    "amountPaise": 447928,
+    "order": {
+      "id": "order_TY3N3AESuVpVJV"
+    },
+    "cancelledAt": "2026-09-04T18:09:13.502Z",
     "error": "Payment window closed by the customer."
   }
 ]

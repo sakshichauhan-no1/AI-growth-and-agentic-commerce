@@ -207,6 +207,85 @@
       font-size: 16px;
     }
 
+    /* Spine status states: keep the five-stage result visible over the glass panel. */
+    .spine li.approved {
+      background: rgba(236, 253, 245, 0.5) !important;
+      border-color: rgba(10, 87, 67, 0.28) !important;
+    }
+
+    .spine li.approved b {
+      background: #0a5743 !important;
+      color: #ffffff !important;
+    }
+
+    .spine li.failed {
+      background: rgba(254, 242, 242, 0.72) !important;
+      border-color: rgba(220, 38, 38, 0.35) !important;
+    }
+
+    .spine li.failed b {
+      background: #dc2626 !important;
+      color: #ffffff !important;
+    }
+
+    .spine li.active {
+      background: rgba(236, 253, 245, 0.5) !important;
+    }
+
+    .spine li.active b {
+      background: #0a5743 !important;
+      color: #ffffff !important;
+      animation: spine-spin 0.9s linear infinite;
+    }
+
+    .spine li.skipped {
+      opacity: 0.55;
+    }
+
+    .spine li.skipped b {
+      background: #e2e8f0 !important;
+      color: #64748b !important;
+    }
+
+    .spine li.skipped.blocked b {
+      background: #dc2626 !important;
+      color: #ffffff !important;
+    }
+
+    .spine li.summary {
+      background: rgba(226, 235, 229, 0.62) !important;
+      border-color: rgba(10, 87, 67, 0.2) !important;
+    }
+
+    .spine li.summary b,
+    .spine li.ready b,
+    .spine li.pending-payment b {
+      background: #e2ebe5 !important;
+      color: #0a5743 !important;
+    }
+
+    .spine li.ready {
+      background: rgba(226, 235, 229, 0.42) !important;
+      border-color: rgba(100, 116, 139, 0.24) !important;
+    }
+
+    .spine li.pending-payment {
+      background: rgba(241, 245, 249, 0.72) !important;
+      border-color: rgba(100, 116, 139, 0.28) !important;
+    }
+
+    .spine li.pending-payment b {
+      animation: spine-pending-pulse 1.25s ease-in-out infinite;
+    }
+
+    @keyframes spine-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes spine-pending-pulse {
+      50% { opacity: 0.45; transform: scale(0.92); }
+    }
+
     .panel h2 {
       font-size: 22px;
       font-weight: 700;

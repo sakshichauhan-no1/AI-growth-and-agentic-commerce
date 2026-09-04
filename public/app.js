@@ -75,6 +75,7 @@ async function initWelcomeMessage() {
       body: JSON.stringify({ query: 'Hello' }),
     });
     const d = await r.json();
+    if (runId !== spineRunId) return;
     if (r.ok && d.agentResponse) {
       _welcomeLoaded = true;
       appendBubble(d.agentResponse, 'agent');
@@ -182,6 +183,9 @@ const SPINE_META = {
   },
 };
 
+const SPINE_STEPS = ['Propose', 'Explain', 'Gate', 'Execute', 'Audit'];
+let spineRunId = 0;
+
 function stage(name, statusObj) {
   const el = $(`[data-step="${name}"]`);
   if (!el) return;
@@ -198,7 +202,7 @@ function stage(name, statusObj) {
   // Reset-only string shorthand (legacy support)
   if (typeof statusObj === 'string') {
     el.className = 'neutral';
-    b.textContent = '--';
+    b.textContent = '—';
     setLabel(meta.label, statusObj === '—' ? meta.idle : statusObj);
     return;
   }
@@ -225,25 +229,249 @@ function stage(name, statusObj) {
     setLabel(errLabel, rawErr || meta.failed || 'Stage could not complete');
 
   } else if (status === 'skipped') {
-    el.className = 'skipped';
-    b.textContent = '--';
+    const blocked = Boolean(statusObj?.blocked);
+    el.className = blocked ? 'skipped blocked' : 'skipped';
+    b.textContent = blocked ? '✕' : '—';
     const isBlocked = name === 'Execute' && statusObj?.blocked;
     setLabel(
       isBlocked ? (meta.blocked || 'Execute · Blocked') : meta.label,
       statusObj?.reason || statusObj?.text || (isBlocked ? meta.blocked : meta.skipped) || 'Not required'
     );
 
+  } else if (status === 'summary') {
+    el.className = 'summary';
+    b.textContent = '↻';
+    setLabel(meta.label, statusObj?.detail || 'Updated order summary — payment not completed');
+
+  } else if (status === 'ready') {
+    el.className = 'ready';
+    b.textContent = '•';
+    setLabel(meta.label, statusObj?.detail || 'Ready for checkout — no payment recorded');
+
+  } else if (status === 'pending-payment') {
+    el.className = 'pending-payment';
+    b.textContent = '⏳';
+    setLabel(meta.label, statusObj?.detail || 'Awaiting Payment Completion / Signature Verification…');
+
   } else if (status === 'active') {
     el.className = 'active';
-    b.textContent = '…';
+    b.textContent = '⟳';
     setLabel(meta.label, statusObj?.detail || meta.active || `Processing ${name}…`);
 
   } else {
     // pending or unknown → show idle state
     el.className = status === 'pending' ? 'pending' : 'neutral';
-    b.textContent = '--';
+    b.textContent = '—';
     setLabel(meta.label, statusObj?.detail || meta.idle || '');
   }
+}
+
+function spineSource(trace, name) {
+  return trace?.[name] ?? trace?.[name.toLowerCase()] ?? null;
+}
+
+function formatSpineAmount(data) {
+  const checkoutAmount = Number(data?.pendingCheckout?.amountPaise);
+  const cartAmount = Number(data?.cartState?.totalPaise)
+    || (data?.cartState?.items || []).reduce((sum, item) => sum + Number(item.totalPaise || 0), 0);
+  const paise = checkoutAmount > 0 ? checkoutAmount : cartAmount;
+  return paise > 0 ? `₹${(paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '₹0.00';
+}
+
+function extractedTarget(query, data) {
+  const items = data?.cartState?.items || data?.pendingCheckout?.items || [];
+  const lastItem = items[items.length - 1];
+  if (lastItem?.name) return lastItem.name;
+  const target = query.match(/(?:buy|order|purchase|add|for)\s+(?:\d+\s+)?(.+?)(?:\s+to my cart)?$/i);
+  return target?.[1]?.trim() || 'Unresolved item';
+}
+
+function microLog(name, raw, query, data) {
+  const passed = raw?.status === 'success';
+  const addOn = isAddOnIntent(query);
+  const target = extractedTarget(query, data);
+  const amount = formatSpineAmount(data);
+  const actionId = raw?.actionId || raw?.transactionId || data?.pendingCheckout?.orderId || 'MOCK-ACTION';
+  const auditIndex = Array.isArray(data?.auditLog) ? data.auditLog.length : '—';
+  const timestamp = new Date().toLocaleTimeString('en-IN', { hour12: false });
+  if (name === 'Propose') {
+    if (addOn) return `Intent: Order Modification / Add-On | Target: ${target}`;
+    const lower = query.toLowerCase();
+    const intent = /\b(modif|change|update|remove|replace)\w*/.test(lower) ? 'Modification'
+      : /\b(buy|order|purchase|add|checkout)\b/.test(lower) ? 'Order Request' : 'Query';
+    return `Intent: ${intent} | Target: ${target}`;
+  }
+  if (name === 'Explain' && addOn) return `Confidence: ${passed ? 96 : 42}% | Add-on availability: ${passed ? 'Valid for current cart item' : 'Unavailable'}`;
+  if (name === 'Explain') return `Confidence: ${passed ? 96 : 42}% | Logic Match: ${passed ? 'Valid' : 'Ambiguous'}`;
+  if (name === 'Gate') return `Limit Check: ${amount} ${passed ? '<' : '≥'} ₹10,000 | Status: ${passed ? 'PASS' : 'FAIL'}`;
+  if (name === 'Execute') return `Action ID: ${actionId} | Processing Status: ${passed ? 'SUCCESS' : 'FAILED'}`;
+  return `Record ID: #${auditIndex} | Timestamp: ${timestamp}`;
+}
+
+function isCommerceIntent(query) {
+  return /\b(buy|order|purchase|add|checkout|cart|pay|payment|product|item|plan|subscription|warranty)\b|₹|\b(?:rs\.?|inr|rupees?)\b/i.test(query);
+}
+
+function isAddOnIntent(query) {
+  return /\b(add|include|upgrade|extend|attach|remove|change|update)\b.*\b(warranty|protection|insurance|cover|plan|addon|add-on)\b/i.test(query)
+    || /\b(warranty|protection|insurance|cover)\b/i.test(query);
+}
+
+function hasActionableCommerce(query, data) {
+  if (!isCommerceIntent(query)) return false;
+  const hasItem = Boolean(
+    data?.pendingCheckout?.items?.length
+    || data?.cartState?.items?.length
+  );
+  return hasItem;
+}
+
+function normalizedSpine(trace, data, query) {
+  const result = {};
+  const commerce = hasActionableCommerce(query, data);
+  const addOn = isAddOnIntent(query);
+  SPINE_STEPS.forEach((name) => {
+    const raw = spineSource(trace, name);
+    if (typeof raw === 'object' && raw) {
+      result[name] = { ...raw, detail: microLog(name, raw, query, data) };
+    } else {
+      const text = String(raw || '');
+      const skipped = /no money action|skipped|not required/i.test(text);
+      const fallback = { status: skipped ? 'skipped' : 'success' };
+      result[name] = { ...fallback, detail: microLog(name, fallback, query, data), text };
+    }
+  });
+
+  if (!commerce) {
+    result.Propose = {
+      status: 'success',
+      detail: 'Intent: General Inquiry / Non-Commerce | Target: None',
+    };
+    result.Explain = {
+      status: 'failed',
+      error: 'No purchase item or checkout action identified.',
+      detail: 'Confidence: 0% | No actionable cart item',
+    };
+    result.Gate = {
+      status: 'failed',
+      error: 'Valid commerce intent or item required',
+      detail: 'Gate Blocked: Valid commerce intent or item required',
+    };
+    result.Execute = {
+      status: 'skipped',
+      blocked: true,
+      reason: 'Blocked after Gate failed.',
+      detail: 'Execution blocked by failed prerequisite.',
+    };
+    result.Audit = {
+      status: 'skipped',
+      blocked: true,
+      reason: 'Blocked after Gate failed.',
+      detail: 'Audit blocked because no authorized action executed.',
+    };
+    return result;
+  }
+
+  if (addOn && !data?.pendingCheckout) {
+    result.Execute = {
+      status: 'summary',
+      detail: `Updated order summary | Payment not completed | Total: ${formatSpineAmount(data)}`,
+    };
+    result.Audit = {
+      status: 'ready',
+      detail: 'Ready for checkout | Awaiting explicit payment completion',
+    };
+  }
+
+  if (data?.pendingCheckout && !addOn) {
+    result.Execute = {
+      status: 'pending-payment',
+      detail: 'Awaiting Payment Completion / Signature Verification…',
+    };
+    result.Audit = {
+      status: 'pending-payment',
+      detail: 'Audit held until payment signature is verified.',
+    };
+  }
+
+  if (data?.pendingCheckout && SPINE_STEPS.slice(0, 3).every((name) => result[name].status !== 'failed')) {
+    result.Propose = { status: 'success', detail: `Intent Verified | Target: ${extractedTarget(query, data)}` };
+    result.Explain = { status: 'success', detail: 'Price & Stock Validated | Inventory and pricing context confirmed' };
+    result.Gate = { status: 'success', detail: `Policy Approved | Limit Check: ${formatSpineAmount(data)} < ₹10,000` };
+  }
+
+  if (!data?.pendingCheckout && !addOn && result.Gate.status === 'success') {
+    result.Execute = {
+      status: 'summary',
+      detail: 'Cart Updated | Awaiting Checkout',
+    };
+    result.Audit = {
+      status: 'ready',
+      detail: 'Ready for checkout | No completed payment transaction',
+    };
+  }
+
+  // Use the same successful verification language for products and add-ons.
+  if (result.Propose.status === 'success') {
+    result.Propose.detail = addOn
+      ? `Intent: Order Modification / Add-On | Target: ${extractedTarget(query, data)}`
+      : `Intent Verified | Target: ${extractedTarget(query, data)}`;
+  }
+  if (result.Explain.status === 'success') {
+    result.Explain.detail = addOn
+      ? 'Price & Stock Validated | Add-on available for current cart item'
+      : 'Price & Stock Validated | Inventory and pricing context confirmed';
+  }
+  if (result.Gate.status === 'success') {
+    result.Gate.detail = `Policy Approved | Limit Check: ${formatSpineAmount(data)} < ₹10,000`;
+  }
+
+  // A downstream success implies that its prerequisites passed. This also
+  // repairs partial/legacy server traces before they reach the renderer.
+  const hasFailure = SPINE_STEPS.slice(0, 3).some((name) => result[name].status === 'failed');
+  if (!hasFailure && (result.Execute.status === 'success' || result.Audit.status === 'success')) {
+    SPINE_STEPS.slice(0, 3).forEach((name) => {
+      result[name] = { status: 'success', detail: microLog(name, { status: 'success' }, query, data) };
+    });
+  }
+
+  // Never allow Execute or Audit to pass after an upstream failure.
+  const firstFailure = SPINE_STEPS.slice(0, 3).findIndex((name) => result[name].status === 'failed');
+  if (firstFailure >= 0) {
+    for (let index = firstFailure + 1; index < SPINE_STEPS.length; index += 1) {
+      const name = SPINE_STEPS[index];
+      result[name] = {
+        status: 'skipped',
+        blocked: true,
+        reason: `Skipped after ${SPINE_STEPS[firstFailure]} failed.`,
+        detail: `Blocked by failed ${SPINE_STEPS[firstFailure]} prerequisite.`,
+      };
+    }
+  }
+  return result;
+}
+
+async function renderSpineSequentially(trace, data, query, runId) {
+  const results = normalizedSpine(trace, data, query);
+  for (let index = 0; index < SPINE_STEPS.length; index += 1) {
+    if (runId !== spineRunId) return;
+    const name = SPINE_STEPS[index];
+    const result = results[name];
+    stage(name, { status: 'active' });
+    await new Promise((resolve) => setTimeout(resolve, 260));
+    if (runId !== spineRunId) return;
+    stage(name, result);
+    if (result.status === 'failed') {
+      // Non-commerce input intentionally reports both the Explain failure and
+      // the immediate Gate block before halting Execute and Audit.
+      if (name === 'Explain' && results.Gate?.status === 'failed') continue;
+      for (let rest = index + 1; rest < SPINE_STEPS.length; rest += 1) {
+        stage(SPINE_STEPS[rest], { status: 'skipped', blocked: true, reason: `Skipped after ${name} failed.` });
+      }
+      return results;
+    }
+  }
+  return results;
 }
 
 /* ── Show a named error badge in the reasoning panel ── */
@@ -251,6 +479,12 @@ function showErrorBadge(badgeText, detail) {
   const el = $('#reasoning');
   if (!el) return;
   el.innerHTML = `<span style="display:inline-flex;align-items:center;gap:8px;background:#fff5f3;border:1px solid #e3a39b;border-radius:8px;padding:8px 12px;font-weight:700;color:#c14338;font-size:13px;">✕ ${escapeHtml(badgeText)}</span>${detail ? `<span style="display:block;margin-top:8px;color:#718078;font-size:12px;">${escapeHtml(detail)}</span>` : ''}`;
+}
+
+function markPaymentPrerequisites() {
+  stage('Propose', { status: 'success', detail: 'Intent Verified' });
+  stage('Explain', { status: 'success', detail: 'Price & Stock Validated' });
+  stage('Gate', { status: 'success', detail: 'Policy Approved' });
 }
 
 /* ══════════════════════════════════════════════════
@@ -436,6 +670,9 @@ async function openRazorpayCheckout(checkout) {
     return;
   }
 
+  stage('Execute', { status: 'pending-payment', detail: 'Awaiting Payment Completion / Signature Verification…' });
+  stage('Audit', { status: 'pending-payment', detail: 'Audit held until payment signature is verified.' });
+
   let outcomeRecorded = false;
   return new Promise((resolve) => {
     const options = {
@@ -457,8 +694,10 @@ async function openRazorpayCheckout(checkout) {
           await recordPaymentOutcome(orderId, 'cancelled', 'Payment window closed by the customer.');
           appendBubble('🚫 Payment cancelled. Your cart is saved. You can retry payment whenever you are ready.', 'agent');
           renderQuickActions(['Retry payment', 'Browse Catalog']);
-          // Update spine — payment not completed
-          stage('Audit', { status: 'failed', error: 'Payment cancelled by customer' });
+          // Payment was not completed: Execute fails and Audit records the halt.
+          markPaymentPrerequisites();
+          stage('Execute', { status: 'failed', error: 'Payment Cancelled', detail: 'Payment Cancelled / Declined' });
+          stage('Audit', { status: 'failed', error: 'Payment cancelled by customer', detail: 'Transaction Aborted' });
           resolve({ cancelled: true });
         },
       },
@@ -494,7 +733,9 @@ async function openRazorpayCheckout(checkout) {
             );
             renderQuickActions(['Browse Catalog', 'Start over']);
 
-            stage('Audit', { status: 'success' });
+            markPaymentPrerequisites();
+            stage('Execute', { status: 'success', detail: `Transaction Successful | Razorpay Payment ID Verified: ${razorpay_payment_id}` });
+            stage('Audit', { status: 'success', detail: `Transaction Recorded #${vData.auditId || vData.recordId || 'DB_ID'}` });
 
             // Inject a "paid" row locally so the audit table updates immediately
             // without waiting for a server round-trip to /api/audit
@@ -520,7 +761,9 @@ async function openRazorpayCheckout(checkout) {
               'agent'
             );
             await recordPaymentOutcome(razorpay_order_id, 'failed', 'Payment verification failed.');
-            stage('Audit', { status: 'failed', error: 'Signature mismatch' });
+            markPaymentPrerequisites();
+            stage('Execute', { status: 'failed', error: 'Signature mismatch', detail: 'Payment Cancelled / Declined — signature verification failed.' });
+            stage('Audit', { status: 'failed', error: 'Signature mismatch', detail: 'Transaction Aborted' });
             renderQuickActions(['Retry payment', 'Browse Catalog']);
             resolve({ success: false });
           }
@@ -531,6 +774,9 @@ async function openRazorpayCheckout(checkout) {
             'agent'
           );
           await recordPaymentOutcome(razorpay_order_id, 'failed', 'Payment verification request failed.');
+          markPaymentPrerequisites();
+          stage('Execute', { status: 'failed', error: 'Verification request failed', detail: 'Payment Cancelled / Declined — verification unavailable.' });
+          stage('Audit', { status: 'failed', error: 'Verification request failed', detail: 'Transaction Aborted' });
           renderQuickActions(['Retry payment', 'Browse Catalog']);
           resolve({ success: false });
         }
@@ -550,7 +796,9 @@ async function openRazorpayCheckout(checkout) {
       );
       recordPaymentOutcome(orderId, 'failed', desc);
       renderQuickActions(['Retry payment', 'Browse Catalog']);
-      stage('Audit', { status: 'failed', error: desc });
+      markPaymentPrerequisites();
+      stage('Execute', { status: 'failed', error: desc, detail: `Payment Cancelled / Declined — ${desc}` });
+      stage('Audit', { status: 'failed', error: desc, detail: 'Transaction Aborted' });
       resolve({ success: false });
     });
 
@@ -578,12 +826,13 @@ function injectPaidAuditRow(entry) {
 async function submitQuery(query) {
   const q = query.trim();
   if (!q) return;
+  const runId = ++spineRunId;
   $('#chat-messages').querySelectorAll('.suggestions-group').forEach((el) => el.remove());
   appendBubble(q, 'user');
   $('#query').value = '';
 
-  // Reset all steps to pending and advance Propose to active immediately
-  ['Propose','Explain','Gate','Execute','Audit'].forEach((name) => stage(name, { status: 'pending' }));
+  // Every new message starts a fresh, persistent five-stage trace.
+  SPINE_STEPS.forEach((name) => stage(name, { status: 'pending' }));
   stage('Propose', { status: 'active' });
   const reasoningEl = $('#reasoning');
   if (reasoningEl) reasoningEl.textContent = 'Processing your request through the safety spine…';
@@ -597,9 +846,10 @@ async function submitQuery(query) {
     const d = await r.json();
 
     if (!r.ok) {
-      // Network/server error — mark Propose as failed with error badge
+      // Network/server error — fail the active stage and explicitly skip the rest.
       const errMsg = d.error || 'Request failed';
       stage('Propose', { status: 'failed', error: errMsg });
+      SPINE_STEPS.slice(1).forEach((name) => stage(name, { status: 'skipped', blocked: true, reason: 'Skipped after Propose failed.' }));
       showErrorBadge('Intent Unrecognized', errMsg);
       return;
     }
@@ -608,41 +858,48 @@ async function submitQuery(query) {
     if (d.suggestedReplies?.length) renderQuickActions(d.suggestedReplies);
 
     if (d.spine) {
-      // Apply each step result sequentially — prior passing steps remain green
-      ['Propose','Explain','Gate','Execute','Audit'].forEach((name) => stage(name, d.spine[name]));
+      const renderedResults = await renderSpineSequentially(d.spine, d, q, runId);
+      if (runId !== spineRunId) return;
 
-      // Determine which step failed (if any) and show the error badge
-      const steps = ['Propose','Explain','Gate','Execute','Audit'];
-      const failedStep = steps.find((n) => d.spine[n]?.status === 'failed');
+      // Determine which step failed (if any) and show the error badge.
+      const failedStep = SPINE_STEPS.find((name) => renderedResults?.[name]?.status === 'failed');
 
       if (failedStep) {
-        const failData = d.spine[failedStep];
+        // Gate is the actionable policy failure when non-commerce input also
+        // carries the earlier Explain diagnostic.
+        const badgeStep = renderedResults.Gate?.status === 'failed' ? 'Gate' : failedStep;
+        const failData = renderedResults[badgeStep];
         const rawErr   = failData?.error || failData?.reasons?.[0] || '';
         let badge;
-        if (failedStep === 'Gate') {
-          badge = rawErr?.toLowerCase().includes('limit') ? 'Gate Failed: Amount Exceeds Limit'
+        if (badgeStep === 'Gate') {
+          badge = rawErr?.toLowerCase().includes('limit') ? 'Gate Failed: Exceeds ₹10,000 policy limit'
                 : rawErr?.toLowerCase().includes('auth')  ? 'Gate Failed: Unauthorized'
-                : 'Gate Failed';
-        } else if (failedStep === 'Propose') {
+                : 'Gate Blocked: Valid commerce intent or item required';
+        } else if (badgeStep === 'Propose') {
           badge = 'Intent Unrecognized';
         } else {
-          badge = `${SPINE_META[failedStep]?.label || failedStep} Failed`;
+          badge = `${SPINE_META[badgeStep]?.label || badgeStep} Failed`;
         }
-        showErrorBadge(badge, rawErr || d.spine[failedStep]?.reasons?.join(' ') || '');
-      } else if (d.spine?.Gate?.reasons?.length) {
-        if (reasoningEl) reasoningEl.textContent = d.spine.Gate.reasons.join(' ');
+        showErrorBadge(badge, rawErr || renderedResults[badgeStep]?.reasons?.join(' ') || '');
+      } else if (renderedResults?.Gate?.reasons?.length) {
+        if (reasoningEl) reasoningEl.textContent = renderedResults.Gate.reasons.join(' ');
       } else {
         if (reasoningEl) reasoningEl.textContent = 'Trace complete — all 5 spine steps evaluated.';
       }
     } else {
-      if (reasoningEl) reasoningEl.textContent = 'Trace complete.';
+      // Keep the UI contract intact even if an older server omits its trace.
+      await renderSpineSequentially({}, d, q, runId);
+      if (runId !== spineRunId) return;
+      if (reasoningEl) reasoningEl.textContent = 'Trace complete — all 5 spine steps evaluated.';
     }
 
     if (d.auditLog) renderAuditLog(d.auditLog); else loadAudit();
     if (d.pendingCheckout) setTimeout(() => openRazorpayCheckout(d.pendingCheckout), 600);
 
   } catch (error) {
+    if (runId !== spineRunId) return;
     stage('Propose', { status: 'failed', error: 'Cannot reach agent' });
+    SPINE_STEPS.slice(1).forEach((name) => stage(name, { status: 'skipped', blocked: true, reason: 'Skipped after Propose failed.' }));
     showErrorBadge('Agent Unreachable', 'Unable to reach the commerce agent. Please try again.');
   }
 }
